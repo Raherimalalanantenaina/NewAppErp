@@ -5,6 +5,10 @@
       "PackagePath": "staticwebassets/NewAppErp.bundle.scp.css"
     },
     {
+      "Id": "/home/nantenaina/Documents/GitHub/NewAppErp/wwwroot/css/base.css",
+      "PackagePath": "staticwebassets/css/base.css"
+    },
+    {
       "Id": "/home/nantenaina/Documents/GitHub/NewAppErp/wwwroot/css/login.css",
       "PackagePath": "staticwebassets/css/login.css"
     },
@@ -15,6 +19,10 @@
     {
       "Id": "/home/nantenaina/Documents/GitHub/NewAppErp/wwwroot/favicon.ico",
       "PackagePath": "staticwebassets/favicon.ico"
+    },
+    {
+      "Id": "/home/nantenaina/Documents/GitHub/NewAppErp/wwwroot/images/RH.jpeg",
+      "PackagePath": "staticwebassets/images/RH.jpeg"
     },
     {
       "Id": "/home/nantenaina/Documents/GitHub/NewAppErp/wwwroot/js/site.js",
