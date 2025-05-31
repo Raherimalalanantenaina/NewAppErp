@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "QFII3qAecyTaGdEa1KaD1IT1eYHzHkDpf90xA4ZTQ8Q=",
+  "Hash": "jix3eVQsv/P9Jh7ow7gYRGC+roVjOIp4ywovXOrDSdY=",
   "Source": "NewAppErp",
   "BasePath": "_content/NewAppErp",
   "Mode": "Default",
@@ -53,6 +53,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "/home/nantenaina/Documents/GitHub/NewAppErp/obj/Debug/net8.0/scopedcss/projectbundle/NewAppErp.bundle.scp.css"
+    },
+    {
+      "Identity": "/home/nantenaina/Documents/GitHub/NewAppErp/wwwroot/css/base.css",
+      "SourceId": "NewAppErp",
+      "SourceType": "Discovered",
+      "ContentRoot": "/home/nantenaina/Documents/GitHub/NewAppErp/wwwroot/",
+      "BasePath": "_content/NewAppErp",
+      "RelativePath": "css/base.css",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/css/base.css"
     },
     {
       "Identity": "/home/nantenaina/Documents/GitHub/NewAppErp/wwwroot/css/login.css",
@@ -110,6 +129,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/favicon.ico"
+    },
+    {
+      "Identity": "/home/nantenaina/Documents/GitHub/NewAppErp/wwwroot/images/RH.jpeg",
+      "SourceId": "NewAppErp",
+      "SourceType": "Discovered",
+      "ContentRoot": "/home/nantenaina/Documents/GitHub/NewAppErp/wwwroot/",
+      "BasePath": "_content/NewAppErp",
+      "RelativePath": "images/RH.jpeg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/images/RH.jpeg"
     },
     {
       "Identity": "/home/nantenaina/Documents/GitHub/NewAppErp/wwwroot/js/site.js",
