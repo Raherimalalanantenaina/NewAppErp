@@ -1,6 +1,8 @@
 @model IEnumerable<NewAppErp.Models.Employer.Employee>
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
+    DateTime dateOfJoining;
+    DateTime.TryParse(ViewBag.FilterDateOfJoining as string, out dateOfJoining);
 }
     <div class="card">
         <div class="card-header">
@@ -8,14 +10,44 @@
         </div>
         <div class="card-body">
             <form method="get" asp-controller="Employee" asp-action="Index" class="form-inline" style="gap:1rem; display:flex; flex-wrap: wrap;">
-                <input type="text" name="Name" placeholder="Nom" class="form-control" style="min-width: 150px;" />
-                <input type="text" name="Department" placeholder="Département"class="form-control" style="min-width: 150px;" />
-                <select name="Status" class="form-control" style="min-width: 150px;">
-                    <option value="">-- Statut --</option>
+                <input type="text" name="name" placeholder="Nom" class="form-control" style="min-width: 150px;" 
+                    value="@ViewBag.FilterName" />
+
+                <select name="department" class="form-control" style="min-width: 150px;">
+                    <option value="">-- Département --</option>
+                    @foreach (var dept in ViewBag.Departments as List<string>)
+                    {
+                        bool isSelected = (ViewBag.FilterDepartment == dept);
+                        <option value="@dept" selected="@(isSelected ? "selected" : null)">@dept</option>
+                    }
                 </select>
+
+                <select name="designation" class="form-control" style="min-width: 150px;">
+                    <option value="">-- Poste --</option>
+                    @foreach (var post in ViewBag.Designations as List<string>)
+                    {
+                        bool isSelected = (ViewBag.FilterDesignation == post);
+                        <option value="@post" selected="@(isSelected ? "selected" : null)">@post</option>
+                    }
+                </select>
+
+                <select name="status" class="form-control" style="min-width: 150px;">
+                    <option value="">-- Statut --</option>
+                    @foreach (var status in ViewBag.StatusList as List<string>)
+                    {
+                        bool isSelected = (ViewBag.FilterStatus == status);
+                        <option value="@status" selected="@(isSelected ? "selected" : null)">@status</option>
+                    }
+                </select>
+
+                <input type="date" name="DateOfJoining" class="form-control" style="min-width: 180px;"
+                    value="@(dateOfJoining != DateTime.MinValue ? dateOfJoining.ToString("yyyy-MM-dd") : "")" />
+
+
                 <button type="submit" class="btn btn-primary">Rechercher</button>
                 <a href="/Employee/Index" class="btn btn-outline-primary">Réinitialiser</a>
             </form>
+
         </div>
     </div>
 
