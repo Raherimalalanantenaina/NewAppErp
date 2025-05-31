@@ -1,8 +1,10 @@
 using NewAppErp.Services.Login;
+using NewAppErp.Services.Employer;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllersWithViews();
+
 
 
 builder.Services.AddHttpClient<ILoginService, LoginService>(client =>
@@ -10,7 +12,15 @@ builder.Services.AddHttpClient<ILoginService, LoginService>(client =>
     client.BaseAddress = new Uri(builder.Configuration["NewAppErp:BaseUrl"]);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
+
+builder.Services.AddHttpClient<IEmployeeService, EmployeeService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["NewAppErp:BaseUrl"]);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
+
 builder.Services.AddScoped<ILoginService, LoginService>();
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 
 builder.Services.AddSession(options =>
 {

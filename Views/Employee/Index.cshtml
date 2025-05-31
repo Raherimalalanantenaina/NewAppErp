@@ -1,0 +1,82 @@
+@model IEnumerable<NewAppErp.Models.Employer.Employee>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+    <div class="card">
+        <div class="card-header">
+            Recherche avancée des employés
+        </div>
+        <div class="card-body">
+            <form method="get" asp-controller="Employee" asp-action="Index" class="form-inline" style="gap:1rem; display:flex; flex-wrap: wrap;">
+                <input type="text" name="Name" placeholder="Nom" class="form-control" style="min-width: 150px;" />
+                <input type="text" name="Department" placeholder="Département"class="form-control" style="min-width: 150px;" />
+                <select name="Status" class="form-control" style="min-width: 150px;">
+                    <option value="">-- Statut --</option>
+                </select>
+                <button type="submit" class="btn btn-primary">Rechercher</button>
+                <a href="/Employee/Index" class="btn btn-outline-primary">Réinitialiser</a>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Liste des employés</div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Matricule</th>
+                        <th>Nom</th>
+                        <th>Département</th>
+                        <th>Poste</th>
+                        <th>Date d'entrée</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="5" style="text-align:center; font-style:italic;">Aucun employé trouvé</td></tr>
+                    }
+                    else
+                    {
+                        foreach (var emp in Model)
+                        {
+                            <tr>
+                                <td>@emp.Name</td>
+                                <td>@emp.EmployeeName</td>
+                                <td>@emp.Department</td>
+                                <td>@emp.Designation</td>
+                                <td>@emp.DateOfJoining.ToString("dd/MM/yyyy")</td>
+                                <td>@emp.Status</td>
+                                <td>
+                                    <a asp-action="Salaries" asp-route-employeeId="@emp.Name" class="btn btn-sm btn-info">
+                                        Voir les salaires
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+            <div class="pagination mt-3">
+                @if ((int)ViewBag.CurrentPage > 1)
+                {
+                    <a asp-action="Index" asp-route-page="@(ViewBag.CurrentPage - 1)" asp-route-name="@ViewBag.Name" asp-route-department="@ViewBag.Department" asp-route-status="@ViewBag.Status" class="btn btn-outline-primary btn-sm">&laquo;</a>
+                }
+
+                @for (int i = 1; i <= (int)ViewBag.TotalPages; i++)
+                {
+                    <a asp-action="Index" asp-route-page="@i" asp-route-name="@ViewBag.Name" asp-route-department="@ViewBag.Department" asp-route-status="@ViewBag.Status"
+                    class="btn btn-sm @(i == (int)ViewBag.CurrentPage ? "btn-primary" : "btn-outline-primary")">@i</a>
+                }
+
+                @if ((int)ViewBag.CurrentPage < (int)ViewBag.TotalPages)
+                {
+                    <a asp-action="Index" asp-route-page="@(ViewBag.CurrentPage + 1)" asp-route-name="@ViewBag.Name" asp-route-department="@ViewBag.Department" asp-route-status="@ViewBag.Status" class="btn btn-outline-primary btn-sm">&raquo;</a>
+                }
+            </div>
+
+        </div>
+    </div>
