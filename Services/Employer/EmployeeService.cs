@@ -26,79 +26,19 @@ namespace NewAppErp.Services.Employer
             return _httpContextAccessor.HttpContext?.Request.Cookies["sid"]
                 ?? _httpContextAccessor.HttpContext?.Session.GetString("AuthToken");
         }
-        // public async Task<List<Employee>> GetEmployees()
-        // {
-        //     var sid = GetSessionId();
-        //     if (string.IsNullOrEmpty(sid))
-        //     {
-        //         throw new UnauthorizedAccessException("Session ID non trouvé. Veuillez vous reconnecter.");
-        //     }
 
-        //     var fields = new List<string>
-        //     {
-        //         "name",
-        //         "employee_name",
-        //         "department",
-        //         "designation",
-        //         "date_of_joining",
-        //         "status"
-        //     };
-        //     var requestUrl = $"{_baseUrl}api/resource/Employee?fields={JsonSerializer.Serialize(fields)}";
-
-        //     var request = new HttpRequestMessage(HttpMethod.Get, requestUrl)
-        //     {
-        //         Headers =
-        //         {
-        //             { "Cookie", $"sid={sid}" },
-        //             { "Accept", "application/json" }
-        //         }
-        //     };
-        //     var response = await _httpClient.SendAsync(request);
-        //     var content = await response.Content.ReadAsStringAsync();
-        //     var apiResponse = JsonSerializer.Deserialize<Dictionary<string, List<Dictionary<string, object>>>>(content);
-
-        //     var result = new List<Employee>();
-
-        //     foreach (var employee in apiResponse["data"])
-        //     {
-        //         var emp = new Employee
-        //         {
-        //             Name = employee.GetValueOrDefault("name")?.ToString(),
-        //             EmployeeName = employee.GetValueOrDefault("employee_name")?.ToString(),
-        //             Department = employee.GetValueOrDefault("department")?.ToString(),
-        //             Designation = employee.GetValueOrDefault("designation")?.ToString(),
-        //             DateOfJoining = DateTime.Parse(employee.GetValueOrDefault("date_of_joining")?.ToString() ?? DateTime.MinValue.ToString()),
-        //             Status = employee.GetValueOrDefault("status")?.ToString()
-        //         };
-        //         result.Add(emp);
-        //     }
-        //     return result;
-        // }
-        public async Task<List<Employee>> GetEmployees(string? name = null, string? department = null, string? status = null, string? designation = null, DateTime? dateOfJoining = null)
+        public async Task<List<Employee>> GetEmployees(string? name = null,string? department = null,string? status = null,string? designation = null,DateTime? dateOfJoining = null,string? gender = null)
         {
             var sid = GetSessionId();
             if (string.IsNullOrEmpty(sid))
                 throw new UnauthorizedAccessException("Session ID non trouvé. Veuillez vous reconnecter.");
 
-            var fields = new List<string> { "name", "employee_name", "department", "designation", "date_of_joining", "status" };
+            var fields = new List<string> 
+            { 
+                "name", "employee_name", "department", "designation", "date_of_joining", "status", "gender" ,"date_of_birth"
+            };
             
-            // Construire l'URL avec filtres query string
-            var queryParams = new List<string>();
-
-            if (!string.IsNullOrEmpty(name))
-                queryParams.Add($"filters=[[\"employee_name\",\"like\",\"%{name}%\"]]");
-            if (!string.IsNullOrEmpty(department))
-                queryParams.Add($"filters=[[\"department\",\"=\",\"{department}\"]]");
-            if (!string.IsNullOrEmpty(status))
-                queryParams.Add($"filters=[[\"status\",\"=\",\"{status}\"]]");
-            if (!string.IsNullOrEmpty(designation))
-                queryParams.Add($"filters=[[\"designation\",\"=\",\"{designation}\"]]");
-            if (dateOfJoining.HasValue)
-                queryParams.Add($"filters=[[\"date_of_joining\",\"=\",\"{dateOfJoining.Value:yyyy-MM-dd}\"]]");
-
-            // Fusionner les filtres : frappe API attend un seul filtre array, donc on doit concaténer en JSON
-            // Exemple correct : filters=[[["field1","=","val1"],["field2","=","val2"],...]]
-            // Donc on va construire un filtre JSON array contenant toutes les conditions
+            // Construction des filtres
             var filtersList = new List<object[]>();
 
             if (!string.IsNullOrEmpty(name))
@@ -111,6 +51,8 @@ namespace NewAppErp.Services.Employer
                 filtersList.Add(new object[] { "designation", "=", designation });
             if (dateOfJoining.HasValue)
                 filtersList.Add(new object[] { "date_of_joining", "=", dateOfJoining.Value.ToString("yyyy-MM-dd") });
+            if (!string.IsNullOrEmpty(gender))
+                filtersList.Add(new object[] { "gender", "=", gender });
 
             string filtersJson = JsonSerializer.Serialize(filtersList);
 
@@ -141,11 +83,49 @@ namespace NewAppErp.Services.Employer
                     Department = employee.GetValueOrDefault("department")?.ToString(),
                     Designation = employee.GetValueOrDefault("designation")?.ToString(),
                     DateOfJoining = DateTime.TryParse(employee.GetValueOrDefault("date_of_joining")?.ToString(), out var dt) ? dt : DateTime.MinValue,
-                    Status = employee.GetValueOrDefault("status")?.ToString()
+                    Status = employee.GetValueOrDefault("status")?.ToString(),
+                    Gender = employee.GetValueOrDefault("gender")?.ToString(),  // Ajout du genre ici
+                    DateOfBirth = DateTime.TryParse(employee.GetValueOrDefault("date_of_birth")?.ToString(), out var dob) ? dob : DateTime.MinValue
                 };
                 result.Add(emp);
             }
             return result;
         }
+        public async Task<Employee?> GetEmployeeById(string id)
+        {
+            var sid = GetSessionId();
+            if (string.IsNullOrEmpty(sid))
+                throw new UnauthorizedAccessException("Session ID non trouvé.");
+
+            var url = $"{_baseUrl}api/resource/Employee/{id}?fields=[\"name\",\"employee_name\",\"department\",\"designation\",\"date_of_joining\",\"status\",\"gender\",\"date_of_birth\"]";
+
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Add("Cookie", $"sid={sid}");
+            request.Headers.Add("Accept", "application/json");
+
+            var response = await _httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            var json = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, object>>>(content);
+
+            var data = json?["data"];
+            if (data == null) return null;
+
+            return new Employee
+            {
+                Name = data.GetValueOrDefault("name")?.ToString(),
+                EmployeeName = data.GetValueOrDefault("employee_name")?.ToString(),
+                Department = data.GetValueOrDefault("department")?.ToString(),
+                Designation = data.GetValueOrDefault("designation")?.ToString(),
+                DateOfJoining = DateTime.TryParse(data.GetValueOrDefault("date_of_joining")?.ToString(), out var dt) ? dt : DateTime.MinValue,
+                Status = data.GetValueOrDefault("status")?.ToString(),
+                Gender = data.GetValueOrDefault("gender")?.ToString(),
+                DateOfBirth = DateTime.TryParse(data.GetValueOrDefault("date_of_birth")?.ToString(), out var dob) ? dob : DateTime.MinValue
+ 
+            };
+        }
+
     }
 }

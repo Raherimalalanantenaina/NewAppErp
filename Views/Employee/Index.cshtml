@@ -40,6 +40,16 @@
                     }
                 </select>
 
+                <select name="gender" class="form-control" style="min-width: 150px;">
+                    <option value="">-- Genre --</option>
+                    @foreach (var g in ViewBag.GenderList as List<string>)
+                    {
+                        bool isSelected = (ViewBag.FilterGender == g);
+                        <option value="@g" selected="@(isSelected ? "selected" : null)">@g</option>
+                    }
+                </select>
+
+
                 <input type="date" name="DateOfJoining" class="form-control" style="min-width: 180px;"
                     value="@(dateOfJoining != DateTime.MinValue ? dateOfJoining.ToString("yyyy-MM-dd") : "")" />
 
@@ -83,8 +93,11 @@
                                 <td>@emp.DateOfJoining.ToString("dd/MM/yyyy")</td>
                                 <td>@emp.Status</td>
                                 <td>
-                                    <a asp-action="Salaries" asp-route-employeeId="@emp.Name" class="btn btn-sm btn-info">
-                                        Voir les salaires
+                                    <a asp-action="Index" 
+                                        asp-controller="Salary" 
+                                        asp-route-employeeId="@emp.Name" 
+                                        class="btn btn-sm btn-info">
+                                            Voir les salaires
                                     </a>
                                 </td>
                             </tr>
