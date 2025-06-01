@@ -25,6 +25,10 @@
       "PackagePath": "staticwebassets/images/RH.jpeg"
     },
     {
+      "Id": "/home/nantenaina/Documents/GitHub/NewAppErp/wwwroot/images/emp.jpeg",
+      "PackagePath": "staticwebassets/images/emp.jpeg"
+    },
+    {
       "Id": "/home/nantenaina/Documents/GitHub/NewAppErp/wwwroot/js/site.js",
       "PackagePath": "staticwebassets/js/site.js"
     },

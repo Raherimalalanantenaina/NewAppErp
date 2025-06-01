@@ -36,6 +36,11 @@ namespace NewAppErp.Services.Util
             return Task.FromResult(new List<string> { "Active", "Left", "Suspended" });
         }
 
+        public async Task<List<string>> GetGenders()
+        {
+            return await GetDistinctValues("Gender", "name");
+        }
+
 
         private string? GetSessionId()
         {

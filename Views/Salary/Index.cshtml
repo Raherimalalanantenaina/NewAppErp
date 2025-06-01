@@ -1,0 +1,112 @@
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml"; // Modifie selon ton projet
+}
+
+<div class="erpnext-main">
+    <div class="employee-profile card fade-in">
+        <div class="profile-header">
+            <div class="profile-photo">
+            <img src="~/images/emp.jpeg" alt="Photo" />
+            </div>
+            <div class="profile-info">
+            <h2>@Model.Employee?.EmployeeName</h2>
+            <p class="employee-id">@Model.Employee?.Name</p>
+            <p class="status active">Statut : @Model.Employee?.Status</p>
+            </div>
+        </div>
+        <div class="profile-body">
+            <div class="info-row">
+            <div><strong>Département :</strong>@Model.Employee?.Department</div>
+            <div><strong>DateNaissance :</strong>@Model.Employee?.DateOfBirth.ToString("yyyy-MM-dd")</div>
+            </div>
+            <div class="info-row">
+            <div><strong>Date d'embauche :</strong> @Model.Employee?.DateOfJoining.ToString("yyyy-MM-dd")</div>
+            <div><strong>Sexe :</strong> @Model.Employee?.Gender</div>
+            </div>
+            <div class="info-row">
+            <div><strong>Poste :</strong>@Model.Employee?.Designation</div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="card fade-in">
+        <div class="card-header">
+            Salaires par Mois
+
+            <form class="form-inline" method="get" asp-action="Index" style="display: flex; gap: 0.5rem;">
+                <input type="hidden" name="employeeId" value="@Model.Employee.Name" />
+
+                <select name="mois" class="form-control">
+                    <option value="">Tous les mois</option>
+                    @for (int m = 1; m <= 12; m++)
+                    {
+                        <option value="@m">@System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(m)</option>
+                    }
+                </select>
+
+                <select name="annee" class="form-control">
+                    <option value="">Toutes les années</option>
+                    @for (int y = DateTime.Now.Year; y >= DateTime.Now.Year - 10; y--)
+                    {
+                        <option value="@y">@y</option>
+                    }
+                </select>
+
+                <button type="submit" class="btn btn-primary">Filtrer</button>
+            </form>
+
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Mois</th>
+                        <th>Total Net</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in Model.Salaries)
+                    {
+                        <tr>
+                            <td>@s.StartDate.ToString("MMMM yyyy")</td>
+                            <td>@s.NetPay.ToString("N2")</td>
+                            <td>
+                                <a href="/Employee/FicheSalaire?id=@s.Name" target="_blank" class="btn btn-sm btn-primary">PDF</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <div class="pagination mt-3">
+                @if ((int)ViewBag.CurrentPage > 1)
+                {
+                    <a asp-action="Index" asp-route-page="@(ViewBag.CurrentPage - 1)"
+                    asp-route-employeeId="@ViewBag.EmployeeId"
+                    asp-route-mois="@ViewBag.Mois"
+                    asp-route-annee="@ViewBag.Annee"
+                    class="btn btn-outline-primary btn-sm">&laquo;</a>
+                }
+
+                @for (int i = 1; i <= (int)ViewBag.TotalPages; i++)
+                {
+                    <a asp-action="Index" asp-route-page="@i"
+                    asp-route-employeeId="@ViewBag.EmployeeId"
+                    asp-route-mois="@ViewBag.Mois"
+                    asp-route-annee="@ViewBag.Annee"
+                    class="btn btn-sm @(i == (int)ViewBag.CurrentPage ? "btn-primary" : "btn-outline-primary")">@i</a>
+                }
+
+                @if ((int)ViewBag.CurrentPage < (int)ViewBag.TotalPages)
+                {
+                    <a asp-action="Index" asp-route-page="@(ViewBag.CurrentPage + 1)"
+                    asp-route-employeeId="@ViewBag.EmployeeId"
+                    asp-route-mois="@ViewBag.Mois"
+                    asp-route-annee="@ViewBag.Annee"
+                    class="btn btn-outline-primary btn-sm">&raquo;</a>
+                }
+            </div>
+        </div>
+    </div>
+</div>

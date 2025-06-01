@@ -27,13 +27,13 @@ namespace NewAppErp.Controllers.Employer
             string? department = null,
             string? status = null,
             string? designation = null,
-            DateTime? dateOfJoining = null)
+            DateTime? dateOfJoining = null,
+            string? gender = null)  // Ajout du genre
         {
             try
             {
-                var employees = await _employeeService.GetEmployees(name, department, status, designation, dateOfJoining);
+                var employees = await _employeeService.GetEmployees(name, department, status, designation, dateOfJoining, gender);
 
-                // Pagination
                 var totalEmployees = employees.Count();
                 var totalPages = (int)Math.Ceiling(totalEmployees / (double)pageSize);
                 var pagedEmployees = employees
@@ -41,19 +41,21 @@ namespace NewAppErp.Controllers.Employer
                     .Take(pageSize)
                     .ToList();
 
-                // ViewBag pour la pagination et les filtres
                 ViewBag.CurrentPage = page;
                 ViewBag.TotalPages = totalPages;
                 ViewBag.Departments = await _utilService.GetDepartments();
                 ViewBag.Designations = await _utilService.GetDesignations();
                 ViewBag.StatusList = await _utilService.GetStatuses();
 
-                // Renvoyer les valeurs des filtres à la vue pour les pré-remplir
+                // Ajouter une méthode pour récupérer la liste des genres (exemple simple ici)
+                ViewBag.GenderList = await _utilService.GetGenders();
+
                 ViewBag.FilterName = name;
                 ViewBag.FilterDepartment = department;
                 ViewBag.FilterStatus = status;
                 ViewBag.FilterDesignation = designation;
                 ViewBag.FilterDateOfJoining = dateOfJoining?.ToString("yyyy-MM-dd");
+                ViewBag.FilterGender = gender;  // valeur du filtre genre
 
                 return View(pagedEmployees);
             }
@@ -63,5 +65,6 @@ namespace NewAppErp.Controllers.Employer
                 return View("Error", ex.Message);
             }
         }
+
     }
 }

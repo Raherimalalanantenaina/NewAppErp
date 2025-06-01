@@ -9,6 +9,10 @@ namespace NewAppErp.Models.Employer
         public string Designation { get; set; }
         public DateTime DateOfJoining { get; set; }
         public string Status { get; set; }
+
+        public string? Gender { get; set; }  // <-- ici
+
+        public DateTime DateOfBirth { get; set; }
     }
 
 }
