@@ -55,6 +55,21 @@ namespace NewAppErp.Controllers.Salary
             }
         }
 
+        [HttpGet]
+        public async Task<IActionResult> FichePaix(string name)
+        {
+            var slip = await _salarySlipService.GetSalarySlipDetail(name);
+            return View(slip);
+        }
+
+        public async Task<IActionResult> ExportPdf(string name)
+        {
+            var slip =await _salarySlipService.GetSalarySlipDetail(name);
+            if (slip == null) return NotFound();
+
+            var pdfBytes = _salarySlipService.GenerateSalarySlipPdf(slip);
+            return File(pdfBytes, "application/pdf", $"FichePaie_{slip.EmployeeName}.pdf");
+        }
 
     }
 }

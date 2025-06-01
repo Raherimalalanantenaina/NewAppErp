@@ -73,7 +73,8 @@
                             <td>@s.StartDate.ToString("MMMM yyyy")</td>
                             <td>@s.NetPay.ToString("N2")</td>
                             <td>
-                                <a href="/Employee/FicheSalaire?id=@s.Name" target="_blank" class="btn btn-sm btn-primary">PDF</a>
+                                <a asp-controller="Salary" asp-action="FichePaix" asp-route-name="@s.Name" class="btn btn-sm btn-primary">Voir détail</a>
+                                <a asp-controller="Salary" asp-action="ExportPdf" asp-route-name="@s.Name" target="_blank" class="btn btn-sm btn-primary">PDF</a>
                             </td>
                         </tr>
                     }
