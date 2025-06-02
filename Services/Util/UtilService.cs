@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using System.Text;
 using System.Text.Json;
 using System.Net;
+using NewAppErp.Models.Salary;
 
 namespace NewAppErp.Services.Util
 {
@@ -41,6 +42,10 @@ namespace NewAppErp.Services.Util
             return await GetDistinctValues("Gender", "name");
         }
 
+        public async Task<List<string>> GetAllSalaryComponents()
+        {
+            return await GetDistinctValues("Salary Component", "name");
+        }
 
         private string? GetSessionId()
         {
@@ -77,5 +82,16 @@ namespace NewAppErp.Services.Util
             return result;
         }
 
+        public Dictionary<string, decimal> CalculerTotaux(List<EmployeeSalaryComponentGridViewModel> viewModels, List<string> componentNames)
+        {
+            var totals = new Dictionary<string, decimal>();
+            foreach (var name in componentNames)
+            {
+                totals[name] = viewModels.Sum(vm => vm.Components.ContainsKey(name) ? vm.Components[name] : 0);
+            }
+            totals["NetPay"] = viewModels.Sum(vm => vm.NetPay);
+            Console.WriteLine(totals["NetPay"]);
+            return totals;
+        }
     }
 }

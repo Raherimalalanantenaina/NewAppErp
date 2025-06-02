@@ -165,12 +165,12 @@ namespace NewAppErp.Services.Salary.SalarySlips
             var writer = new PdfWriter(ms);
             var pdf = new PdfDocument(writer);
             var document = new Document(pdf, PageSize.A4);
-            
+
             // Polices et styles
             PdfFont fontNormal = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
             PdfFont fontBold = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
             PdfFont fontItalic = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_OBLIQUE);
-            
+
             // Styles
             var titleStyle = new Style().SetFont(fontBold).SetFontSize(14);
             var subtitleStyle = new Style().SetFont(fontBold).SetFontSize(11);
@@ -196,7 +196,7 @@ namespace NewAppErp.Services.Salary.SalarySlips
             document.Add(new Paragraph()
                 .Add(new Text("Informations employé").AddStyle(subtitleStyle))
                 .SetMarginBottom(8));
-            
+
             var employeeInfo = new Paragraph()
                 .AddTabStops(new TabStop(150, TabAlignment.LEFT))
                 .Add(new Text("Nom:").AddStyle(normalStyle)).Add(new Tab())
@@ -255,7 +255,7 @@ namespace NewAppErp.Services.Salary.SalarySlips
                 .SetBorder(new SolidBorder(1))
                 .SetPadding(10)
                 .SetMarginBottom(15);
-            
+
             summary.Add(new Paragraph()
                 .Add(new Text("Récapitulatif").AddStyle(subtitleStyle.SetUnderline()))
                 .SetMarginBottom(8));
@@ -284,5 +284,96 @@ namespace NewAppErp.Services.Salary.SalarySlips
             document.Close();
             return ms.ToArray();
         }
+
+        public async Task<List<SalarySlip>> GetSalarySlipsAsync(int? month, int? year)
+        {
+            var sid = GetSessionId();
+            if (string.IsNullOrEmpty(sid))
+                throw new UnauthorizedAccessException("Session ID non trouvé.");
+
+            var fields = new[] { "name", "employee", "employee_name", "department", "designation", "net_pay", "start_date" };
+            var url = $"{_baseUrl}api/resource/Salary Slip?fields={JsonSerializer.Serialize(fields)}";
+
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Add("Cookie", $"sid={sid}");
+            var response = await _httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+            var json = JObject.Parse(content)["data"] as JArray;
+
+            var slips = new List<SalarySlip>();
+
+            foreach (var item in json ?? new JArray())
+            {
+                var slip = new SalarySlip
+                {
+                    Name = item["name"]?.ToString(),
+                    Employee = item["employee"]?.ToString(),
+                    EmployeeName = item["employee_name"]?.ToString(),
+                    Department = item["department"]?.ToString(),
+                    Designation = item["designation"]?.ToString(),
+                    StartDate = item["start_date"]?.ToObject<DateTime?>(),
+                    NetPay = item["net_pay"]?.Value<decimal>() ?? 0,
+                    Earnings = new List<SalaryComponent>(),
+                    Deductions = new List<SalaryComponent>()
+                };
+
+                // Appel pour charger earnings et deductions
+                var detailRequest = new HttpRequestMessage(HttpMethod.Get, $"{_baseUrl}api/resource/Salary Slip/{slip.Name}");
+                detailRequest.Headers.Add("Cookie", $"sid={sid}");
+                var slipDetailResp = await _httpClient.SendAsync(detailRequest);
+                slipDetailResp.EnsureSuccessStatusCode();
+
+                var slipDetailJson = JObject.Parse(await slipDetailResp.Content.ReadAsStringAsync());
+                var earnings = slipDetailJson["data"]?["earnings"] as JArray;
+                var deductions = slipDetailJson["data"]?["deductions"] as JArray;
+
+                if (earnings != null)
+                {
+                    foreach (var e in earnings)
+                    {
+                        slip.Earnings.Add(new SalaryComponent
+                        {
+                            SalaryComponentName = e["salary_component"]?.ToString(),
+                            Amount = e["amount"]?.Value<decimal>() ?? 0,
+                            Abbreviation = e["abbr"]?.ToString(),
+                            YearToDate = e["year_to_date"]?.Value<decimal>() ?? 0
+                        });
+                    }
+                }
+
+                if (deductions != null)
+                {
+                    foreach (var d in deductions)
+                    {
+                        slip.Deductions.Add(new SalaryComponent
+                        {
+                            SalaryComponentName = d["salary_component"]?.ToString(),
+                            Amount = d["amount"]?.Value<decimal>() ?? 0,
+                            Abbreviation = d["abbr"]?.ToString(),
+                            YearToDate = d["year_to_date"]?.Value<decimal>() ?? 0
+                        });
+                    }
+                }
+
+                slips.Add(slip);
+            }
+
+            // 👉 Filtrage en C# ici
+            if (year.HasValue)
+            {
+                slips = slips.Where(s => s.StartDate.HasValue && s.StartDate.Value.Year == year.Value).ToList();
+            }
+
+            if (month.HasValue)
+            {
+                slips = slips.Where(s => s.StartDate.HasValue && s.StartDate.Value.Month == month.Value).ToList();
+            }
+
+            return slips;
+        }
+
+
     }
 }

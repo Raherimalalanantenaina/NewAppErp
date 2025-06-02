@@ -10,5 +10,6 @@ namespace NewAppErp.Services.Salary.SalarySlips
         Task<List<SalarySlip>> GetSalarySlipsByEmployee(string employeeId, int? month = null, int? year = null);
         Task<SalarySlip> GetSalarySlipDetail(string name);
         byte[] GenerateSalarySlipPdf(SalarySlip slip);
+        Task<List<SalarySlip>> GetSalarySlipsAsync(int? month, int? year);
     }
 }
