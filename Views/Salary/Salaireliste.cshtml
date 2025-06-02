@@ -1,0 +1,76 @@
+@model List<NewAppErp.Models.Salary.EmployeeSalaryComponentGridViewModel>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml"; 
+    var components = ViewBag.ComponentNames as List<string> ?? new List<string>();
+}
+<form method="get" asp-action="Salaireliste" class="mb-4">
+    <div class="form-row d-flex gap-2 align-items-end">
+        <div class="form-group">
+            <label for="month">Mois</label>
+            <select id="month" name="month" class="form-control">
+                <option value="">-- Tous --</option>
+                @for (int m = 1; m <= 12; m++)
+                {
+                    <option value="@m">
+                        @System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(m)
+                    </option>
+                }
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="year">Année</label>
+            <input type="number" id="year" name="year" class="form-control"
+                 placeholder="Ex: 2025" min="2000" max="2100" />
+        </div>
+
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">Filtrer</button>
+        </div>
+    </div>
+</form>
+
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Employé</th>
+            <th>mois</th>
+            @foreach (var comp in components)
+            {
+                <th>@comp</th>
+            }
+
+            <th>Net à Payer</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.EmployeeName</td>
+                <td>@item.StartDate?.ToString("MMMM yyyy", System.Globalization.CultureInfo.InvariantCulture)</td>
+                @foreach (var comp in components)
+                {
+                    <td>
+                        @String.Format("{0:N2}", item.Components.ContainsKey(comp) ? item.Components[comp] : 0)
+                    </td>
+                }
+                <td><strong>@String.Format("{0:N2}", item.NetPay)</strong></td>
+            </tr>
+        }
+        <tr>
+        <td><strong>Total</strong></td>
+        <td colspan="1"></td> <!-- Ajuste selon tes colonnes fixes -->
+        @foreach (var name in ViewBag.ComponentNames as List<string>)
+        {
+            var total = ((Dictionary<string, decimal>)ViewBag.ComponentTotals)[name];
+            <td class="text-end fw-bold">@total.ToString("N2")</td>
+        }
+        <td>
+            @(((Dictionary<string, decimal>)ViewBag.ComponentTotals)["NetPay"].ToString("N2"))
+        </td>
+        </tr>
+    </tr>
+    </tbody>
+</table>

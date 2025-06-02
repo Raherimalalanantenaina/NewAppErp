@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using System.Net;
 using NewAppErp.Models.Employer;
+using NewAppErp.Models.Salary;
 namespace NewAppErp.Services.Employer
 {
     public class EmployeeService : IEmployeeService
@@ -27,17 +28,17 @@ namespace NewAppErp.Services.Employer
                 ?? _httpContextAccessor.HttpContext?.Session.GetString("AuthToken");
         }
 
-        public async Task<List<Employee>> GetEmployees(string? name = null,string? department = null,string? status = null,string? designation = null,DateTime? dateOfJoining = null,string? gender = null)
+        public async Task<List<Employee>> GetEmployees(string? name = null, string? department = null, string? status = null, string? designation = null, DateTime? dateOfJoining = null, string? gender = null)
         {
             var sid = GetSessionId();
             if (string.IsNullOrEmpty(sid))
                 throw new UnauthorizedAccessException("Session ID non trouvé. Veuillez vous reconnecter.");
 
-            var fields = new List<string> 
-            { 
+            var fields = new List<string>
+            {
                 "name", "employee_name", "department", "designation", "date_of_joining", "status", "gender" ,"date_of_birth"
             };
-            
+
             // Construction des filtres
             var filtersList = new List<object[]>();
 
@@ -123,9 +124,10 @@ namespace NewAppErp.Services.Employer
                 Status = data.GetValueOrDefault("status")?.ToString(),
                 Gender = data.GetValueOrDefault("gender")?.ToString(),
                 DateOfBirth = DateTime.TryParse(data.GetValueOrDefault("date_of_birth")?.ToString(), out var dob) ? dob : DateTime.MinValue
- 
+
             };
         }
+
 
     }
 }
