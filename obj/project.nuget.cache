@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "nXIejNZfiWQ=",
+  "dgSpecHash": "kllGxp+ztgQ=",
   "success": true,
   "projectFilePath": "/home/nantenaina/Documents/GitHub/NewAppErp/NewAppErp.csproj",
   "expectedPackageFiles": [
@@ -88,7 +88,10 @@
     "/home/nantenaina/.nuget/packages/system.threading.thread/4.3.0/system.threading.thread.4.3.0.nupkg.sha512",
     "/home/nantenaina/.nuget/packages/system.threading.threadpool/4.3.0/system.threading.threadpool.4.3.0.nupkg.sha512",
     "/home/nantenaina/.nuget/packages/system.xml.readerwriter/4.3.0/system.xml.readerwriter.4.3.0.nupkg.sha512",
-    "/home/nantenaina/.nuget/packages/system.xml.xmldocument/4.3.0/system.xml.xmldocument.4.3.0.nupkg.sha512"
+    "/home/nantenaina/.nuget/packages/system.xml.xmldocument/4.3.0/system.xml.xmldocument.4.3.0.nupkg.sha512",
+    "/home/nantenaina/.nuget/packages/microsoft.netcore.app.ref/8.0.16/microsoft.netcore.app.ref.8.0.16.nupkg.sha512",
+    "/home/nantenaina/.nuget/packages/microsoft.aspnetcore.app.ref/8.0.16/microsoft.aspnetcore.app.ref.8.0.16.nupkg.sha512",
+    "/home/nantenaina/.nuget/packages/microsoft.netcore.app.host.linux-x64/8.0.16/microsoft.netcore.app.host.linux-x64.8.0.16.nupkg.sha512"
   ],
   "logs": []
 }

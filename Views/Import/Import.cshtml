@@ -1,0 +1,60 @@
+@model NewAppErp.Models.ImportDto.ImportResult
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Import Employés & Éléments Salariaux</h2>
+
+<form asp-action="Import" asp-controller="Import" enctype="multipart/form-data" method="post">
+    <div class="mb-3">
+        <label for="employeeFile" class="form-label">Fichier CSV Employés</label>
+        <input type="file" name="employeeFile" id="employeeFile" accept=".csv" class="form-control" required />
+    </div>
+    <div class="mb-3">
+        <label for="salaryFile" class="form-label">Fichier CSV Éléments Salariaux</label>
+        <input type="file" name="salaryFile" id="salaryFile" accept=".csv" class="form-control" required />
+    </div>
+    <div class="mb-3">
+        <label for="salaryEmpFile" class="form-label">Fichier CSV Salaires Employés</label>
+        <input type="file" name="salaryEmpFile" id="salaryEmpFile" accept=".csv" class="form-control" required />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Charger</button>
+</form>
+
+@if (Model != null)
+{
+    if (Model.Errors.Any())
+    {
+        <div class="alert alert-danger mt-4">
+            <h5>Erreurs détectées :</h5>
+            <ul>
+                @foreach (var error in Model.Errors)
+                {
+                    <li>@error</li>
+                }
+            </ul>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-success mt-4">
+            <p>Toutes les données sont valides. Vous pouvez les valider et les enregistrer.</p>
+
+            @if (!string.IsNullOrEmpty(Model.ApiMessage))
+            {
+                <p class="mt-2"><strong>Message API :</strong> @Model.ApiMessage</p>
+            }
+
+            @if (Model.ImportSummary != null)
+            {
+                <p><strong>Importation réussie :</strong></p>
+                <ul>
+                    <li>Employés : @Model.ImportSummary.Counts?.Employees</li>
+                    <li>Structures : @Model.ImportSummary.Counts?.Structures</li>
+                    <li>Fiches de paie : @Model.ImportSummary.Counts?.Slips</li>
+                </ul>
+            }
+        </div>
+    }
+}

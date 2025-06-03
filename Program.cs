@@ -2,6 +2,7 @@ using NewAppErp.Services.Login;
 using NewAppErp.Services.Employer;
 using NewAppErp.Services.Util;
 using NewAppErp.Services.Salary.SalarySlips;
+using NewAppErp.Services.Import;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHttpContextAccessor();
@@ -33,10 +34,17 @@ builder.Services.AddHttpClient<ISalarySlipService, SalarySlipService>(client =>
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 
+builder.Services.AddHttpClient<IImportService, ImportService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["NewAppErp:BaseUrl"]);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
+
 builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IUtilService, UtilService>();
 builder.Services.AddScoped<ISalarySlipService, SalarySlipService>();
+builder.Services.AddScoped<IImportService, ImportService>();
 
 builder.Services.AddSession(options =>
 {
