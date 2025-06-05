@@ -1,66 +1,124 @@
 ﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - ERPNext HRMS</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backoffice RH</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="~/css/base.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <button class="sidebar-toggle" onclick="toggleSidebar()">
-            <i class="fas fa-bars"></i>
-        </button>
-        <ul>
-            <li><a asp-controller="Home" asp-action="Index"><i class="fas fa-home"></i> <span>Accueil</span></a></li>
-            <li><a asp-controller="Employee" asp-action="Index"><i class="fas fa-users"></i> <span>Employés</span></a></li>
-            <li><a asp-controller="Leave" asp-action="Index"><i class="fas fa-calendar-alt"></i> <span>Congés</span></a></li>
-            <li><a asp-controller="Import" asp-action="Import"><i class="fas fa-file-invoice-dollar"></i> <span>Import</span></a></li>
-            <li><a asp-controller="Salary" asp-action="Salaireliste"><i class="fas fa-chart-line"></i> <span>Rapports Salaire</span></a></li>
-        </ul>
+    <!-- Sidebar blanche rétrécissable -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>RH PRO</h2>
+            <button class="toggle-sidebar">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        </div>
+        
+        <div class="sidebar-menu">
+            <div class="menu-category">Principal</div>
+            <a asp-controller="Salary" asp-action="Salaireliste" class="menu-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Tableau de bord</span>
+            </a>
+            
+            <div class="menu-category">Gestion</div>
+            <a asp-controller="Employee" asp-action="Index" class="menu-item">
+                <i class="fas fa-users"></i>
+                <span>Employés</span>
+            </a>
+            <a asp-controller="Salary" asp-action="Salaireliste" class="menu-item">
+                <i class="fas fa-file-contract"></i>
+                <span>Employee Salaire</span>
+            </a>
+            
+            <div class="menu-category">Administration</div>
+            <a asp-controller="Import" asp-action="ResetView" class="menu-item">
+                <i class="fas fa-cog"></i>
+                <span>ResetData</span>
+            </a>
+            <a asp-controller="Import" asp-action="Import" class="menu-item">
+                <i class="fas fa-database"></i>
+                <span>Import</span>
+            </a>
+            <a asp-controller="Salary" asp-action="SalaireStatistique" class="menu-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Rapports</span>
+            </a>
+        </div>
+        
+        <div class="sidebar-footer">
+            <div>RH Platform</div>
+            <div>v2.1.0</div>
+        </div>
     </div>
-
-    <!-- Main content -->
+    
+    <!-- Main Content -->
     <div class="main-content">
         <!-- Header -->
-        <header class="erpnext-header">
-            <div class="logo-container">
-                <img src="~/images/erpnext-logo.png" alt="ERPNext HRMS Logo" class="logo">
-                <span class="brand-name"></span>
+        <header class="header">
+            <div class="header-left">
+                <h1>Tableau de bord</h1>
             </div>
-            <div class="user-actions">
+            
+            <div class="header-right">
                 <div class="user-profile">
-                    <img src="~/images/RH.jpeg" alt="User Avatar" class="avatar">
-                    <span class="username">@User.Identity?.Name</span>
-                    <i class="fas fa-chevron-down"></i>
-                    <ul class="user-dropdown">
-                        <li><a asp-controller="Login" asp-action="Profile"><i class="fas fa-user"></i> Profil</a></li>
-                        <li><a asp-controller="Login" asp-action="Logout"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
-                    </ul>
+                    <div class="user-avatar">AD</div>
+                    <span class="user-name">@User.Identity?.Name</span>
                 </div>
+                <form asp-controller="Login" asp-action="Logout" method="get">
+                    <button type="submit" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    </button>
+                </form>
             </div>
         </header>
-
-        <!-- Page content -->
-        <main class="erpnext-main">
+        
+        <!-- Content -->
+        <div class="content">
             @RenderBody()
-        </main>
+        </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
     <script>
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('collapsed');
-            document.querySelector('.main-content').classList.toggle('collapsed');
-        }
+        // Toggle sidebar
+        const toggleBtn = document.querySelector('.toggle-sidebar');
+        const sidebar = document.querySelector('.sidebar');
+        const body = document.body;
+        
+        toggleBtn.addEventListener('click', function() {
+            sidebar.classList.toggle('collapsed');
+            body.classList.toggle('sidebar-collapsed');
+            
+            // Change l'icône
+            const icon = this.querySelector('i');
+            if (sidebar.classList.contains('collapsed')) {
+                icon.classList.remove('fa-chevron-left');
+                icon.classList.add('fa-chevron-right');
+            } else {
+                icon.classList.remove('fa-chevron-right');
+                icon.classList.add('fa-chevron-left');
+            }
+        });
+        
+        // Gestion du menu actif
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                //e.preventDefault();
+                document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Mise à jour du titre du header
+                const title = this.querySelector('span').textContent;
+                document.querySelector('.header-left h1').textContent = title;
+            });
+        });
+        
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

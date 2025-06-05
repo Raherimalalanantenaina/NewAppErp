@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NewAppErp.Models.ImportDto;
@@ -50,8 +51,6 @@ namespace NewAppErp.Controllers.Import
             {
                 return View(result);
             }
-
-            // Sinon on envoie les données à l’API
             var importData = new ImportDataDto
             {
                 Employees = result.ValidRows,
@@ -62,25 +61,48 @@ namespace NewAppErp.Controllers.Import
             try
             {
                 var apiResponse = await _importService.EnvoyerImportDataAsync(importData);
+                Console.WriteLine(apiResponse.Message);
                 result.ApiMessage = apiResponse.Message;
                 result.ImportSummary = apiResponse;
-
-                // Ajouter les erreurs retournées par l’API s’il y en a
                 if (apiResponse.Errors != null && apiResponse.Errors.Any())
                 {
                     foreach (var err in apiResponse.Errors)
                     {
-                        result.Errors.Add($"Ligne {err.Line} - Employé {err.Employee} : {err.Error}");
+                        result.Errors.Add(err);
                     }
                 }
             }
+            catch (JsonException ex)
+            {
+
+                ViewBag.message = ex.Message;
+                return View();
+            }
+            return View(result);
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> ResetData()
+        {
+            try
+            {
+                await _importService.ResetDataAsync();
+                TempData["Message"] = "Les données ont été réinitialisées avec succès.";
+            }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", $"Erreur lors de l’envoi des données à l’API : {ex.Message}");
+                TempData["Error"] = $"Erreur : {ex.Message}";
             }
 
-            return View(result);
+            return RedirectToAction("ResetView");
+        }
 
+        [HttpGet]
+        public IActionResult ResetView()
+        {
+            ViewBag.Message = TempData["ResetResult"];
+            return View();
         }
     }
 }

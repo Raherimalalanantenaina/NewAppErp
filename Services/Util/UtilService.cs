@@ -90,7 +90,9 @@ namespace NewAppErp.Services.Util
                 totals[name] = viewModels.Sum(vm => vm.Components.ContainsKey(name) ? vm.Components[name] : 0);
             }
             totals["NetPay"] = viewModels.Sum(vm => vm.NetPay);
-            Console.WriteLine(totals["NetPay"]);
+            totals["Gain"] = viewModels.Sum(vm => vm.GrossPay);
+            totals["Deduction"] = viewModels.Sum(vm => vm.TotalDeduction);
+            Console.WriteLine(totals["Deduction"]);
             return totals;
         }
     }

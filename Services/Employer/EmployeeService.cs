@@ -28,37 +28,27 @@ namespace NewAppErp.Services.Employer
                 ?? _httpContextAccessor.HttpContext?.Session.GetString("AuthToken");
         }
 
-        public async Task<List<Employee>> GetEmployees(string? name = null, string? department = null, string? status = null, string? designation = null, DateTime? dateOfJoining = null, string? gender = null)
+        public async Task<PagedResult<Employee>> GetEmployees(string? name = null,string? department = null,string? status = null,string? designation = null,DateTime? dateOfJoining = null,string? gender = null,int limit = 10,int offset = 0)
         {
             var sid = GetSessionId();
             if (string.IsNullOrEmpty(sid))
-                throw new UnauthorizedAccessException("Session ID non trouvé. Veuillez vous reconnecter.");
+                throw new UnauthorizedAccessException("Session ID non trouvé.");
 
-            var fields = new List<string>
-            {
-                "name", "employee_name", "department", "designation", "date_of_joining", "status", "gender" ,"date_of_birth"
-            };
+            var fields = new List<string> { "name", "employee_name", "department", "designation", "date_of_joining", "status", "gender", "date_of_birth" };
 
-            // Construction des filtres
             var filtersList = new List<object[]>();
-
-            if (!string.IsNullOrEmpty(name))
-                filtersList.Add(new object[] { "employee_name", "like", $"%{name}%" });
-            if (!string.IsNullOrEmpty(department))
-                filtersList.Add(new object[] { "department", "=", department });
-            if (!string.IsNullOrEmpty(status))
-                filtersList.Add(new object[] { "status", "=", status });
-            if (!string.IsNullOrEmpty(designation))
-                filtersList.Add(new object[] { "designation", "=", designation });
-            if (dateOfJoining.HasValue)
-                filtersList.Add(new object[] { "date_of_joining", "=", dateOfJoining.Value.ToString("yyyy-MM-dd") });
-            if (!string.IsNullOrEmpty(gender))
-                filtersList.Add(new object[] { "gender", "=", gender });
+            if (!string.IsNullOrEmpty(name)) filtersList.Add(new object[] { "employee_name", "like", $"%{name}%" });
+            if (!string.IsNullOrEmpty(department)) filtersList.Add(new object[] { "department", "=", department });
+            if (!string.IsNullOrEmpty(status)) filtersList.Add(new object[] { "status", "=", status });
+            if (!string.IsNullOrEmpty(designation)) filtersList.Add(new object[] { "designation", "=", designation });
+            if (dateOfJoining.HasValue) filtersList.Add(new object[] { "date_of_joining", "=", dateOfJoining.Value.ToString("yyyy-MM-dd") });
+            if (!string.IsNullOrEmpty(gender)) filtersList.Add(new object[] { "gender", "=", gender });
 
             string filtersJson = JsonSerializer.Serialize(filtersList);
+            string fieldParams = JsonSerializer.Serialize(fields);
 
-            var requestUrl = $"{_baseUrl}api/resource/Employee?fields={JsonSerializer.Serialize(fields)}";
-
+            // 1. Requête principale (pagination)
+            string requestUrl = $"{_baseUrl}api/resource/Employee?fields={fieldParams}&limit_start={offset}&limit_page_length={limit}";
             if (filtersList.Count > 0)
                 requestUrl += $"&filters={Uri.EscapeDataString(filtersJson)}";
 
@@ -68,30 +58,49 @@ namespace NewAppErp.Services.Employer
 
             var response = await _httpClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
-
             var content = await response.Content.ReadAsStringAsync();
 
             var apiResponse = JsonSerializer.Deserialize<Dictionary<string, List<Dictionary<string, object>>>>(content);
-
             var result = new List<Employee>();
 
-            foreach (var employee in apiResponse?["data"] ?? new List<Dictionary<string, object>>())
+            foreach (var empData in apiResponse?["data"] ?? new())
             {
-                var emp = new Employee
+                result.Add(new Employee
                 {
-                    Name = employee.GetValueOrDefault("name")?.ToString(),
-                    EmployeeName = employee.GetValueOrDefault("employee_name")?.ToString(),
-                    Department = employee.GetValueOrDefault("department")?.ToString(),
-                    Designation = employee.GetValueOrDefault("designation")?.ToString(),
-                    DateOfJoining = DateTime.TryParse(employee.GetValueOrDefault("date_of_joining")?.ToString(), out var dt) ? dt : DateTime.MinValue,
-                    Status = employee.GetValueOrDefault("status")?.ToString(),
-                    Gender = employee.GetValueOrDefault("gender")?.ToString(),  // Ajout du genre ici
-                    DateOfBirth = DateTime.TryParse(employee.GetValueOrDefault("date_of_birth")?.ToString(), out var dob) ? dob : DateTime.MinValue
-                };
-                result.Add(emp);
+                    Name = empData.GetValueOrDefault("name")?.ToString(),
+                    EmployeeName = empData.GetValueOrDefault("employee_name")?.ToString(),
+                    Department = empData.GetValueOrDefault("department")?.ToString(),
+                    Designation = empData.GetValueOrDefault("designation")?.ToString(),
+                    DateOfJoining = DateTime.TryParse(empData.GetValueOrDefault("date_of_joining")?.ToString(), out var dt) ? dt : DateTime.MinValue,
+                    Status = empData.GetValueOrDefault("status")?.ToString(),
+                    Gender = empData.GetValueOrDefault("gender")?.ToString(),
+                    DateOfBirth = DateTime.TryParse(empData.GetValueOrDefault("date_of_birth")?.ToString(), out var dob) ? dob : DateTime.MinValue
+                });
             }
-            return result;
+
+            // 2. Requête "count" (même filtre mais limit à 0)
+            string countUrl = $"{_baseUrl}api/resource/Employee?fields=[\"name\"]&limit_page_length=0";
+            if (filtersList.Count > 0)
+                countUrl += $"&filters={Uri.EscapeDataString(filtersJson)}";
+
+            var countRequest = new HttpRequestMessage(HttpMethod.Get, countUrl);
+            countRequest.Headers.Add("Cookie", $"sid={sid}");
+            countRequest.Headers.Add("Accept", "application/json");
+
+            var countResponse = await _httpClient.SendAsync(countRequest);
+            countResponse.EnsureSuccessStatusCode();
+            var countContent = await countResponse.Content.ReadAsStringAsync();
+
+            var countResult = JsonSerializer.Deserialize<Dictionary<string, List<Dictionary<string, object>>>>(countContent);
+            int totalCount = countResult?["data"]?.Count ?? 0;
+
+            return new PagedResult<Employee>
+            {
+                Items = result,
+                TotalCount = totalCount
+            };
         }
+
         public async Task<Employee?> GetEmployeeById(string id)
         {
             var sid = GetSessionId();
@@ -127,7 +136,6 @@ namespace NewAppErp.Services.Employer
 
             };
         }
-
 
     }
 }

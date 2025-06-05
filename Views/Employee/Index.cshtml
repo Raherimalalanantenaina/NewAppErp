@@ -4,124 +4,117 @@
     DateTime dateOfJoining;
     DateTime.TryParse(ViewBag.FilterDateOfJoining as string, out dateOfJoining);
 }
-    <div class="card">
-        <div class="card-header">
-            Recherche avancée des employés
+<div class="search-card">
+    <h2 class="search-title">Recherche d'Employés</h2>
+    <form class="search-form" method="get" asp-controller="Employee" asp-action="Index">
+        <div class="form-group">
+            <label for="status">Statut</label>
+            <select id="status" class="form-control" name="status">
+               <option value="">-- Statut --</option>
+                @foreach (var status in ViewBag.StatusList as List<string>)
+                {
+                    bool isSelected = (ViewBag.FilterStatus == status);
+                    <option value="@status" selected="@(isSelected ? "selected" : null)">@status</option>
+                }
+            </select>
         </div>
-        <div class="card-body">
-            <form method="get" asp-controller="Employee" asp-action="Index" class="form-inline" style="gap:1rem; display:flex; flex-wrap: wrap;">
-                <input type="text" name="name" placeholder="Nom" class="form-control" style="min-width: 150px;" 
-                    value="@ViewBag.FilterName" />
-
-                <select name="department" class="form-control" style="min-width: 150px;">
-                    <option value="">-- Département --</option>
-                    @foreach (var dept in ViewBag.Departments as List<string>)
-                    {
-                        bool isSelected = (ViewBag.FilterDepartment == dept);
-                        <option value="@dept" selected="@(isSelected ? "selected" : null)">@dept</option>
-                    }
-                </select>
-
-                <select name="designation" class="form-control" style="min-width: 150px;">
-                    <option value="">-- Poste --</option>
-                    @foreach (var post in ViewBag.Designations as List<string>)
-                    {
-                        bool isSelected = (ViewBag.FilterDesignation == post);
-                        <option value="@post" selected="@(isSelected ? "selected" : null)">@post</option>
-                    }
-                </select>
-
-                <select name="status" class="form-control" style="min-width: 150px;">
-                    <option value="">-- Statut --</option>
-                    @foreach (var status in ViewBag.StatusList as List<string>)
-                    {
-                        bool isSelected = (ViewBag.FilterStatus == status);
-                        <option value="@status" selected="@(isSelected ? "selected" : null)">@status</option>
-                    }
-                </select>
-
-                <select name="gender" class="form-control" style="min-width: 150px;">
-                    <option value="">-- Genre --</option>
-                    @foreach (var g in ViewBag.GenderList as List<string>)
-                    {
-                        bool isSelected = (ViewBag.FilterGender == g);
-                        <option value="@g" selected="@(isSelected ? "selected" : null)">@g</option>
-                    }
-                </select>
-
-
-                <input type="date" name="DateOfJoining" class="form-control" style="min-width: 180px;"
+        
+        <div class="form-group">
+            <label for="gender">Genre</label>
+            <select id="gender"  name="gender" class="form-control">
+                <option value="">-- Genre --</option>
+                @foreach (var g in ViewBag.GenderList as List<string>)
+                {
+                    bool isSelected = (ViewBag.FilterGender == g);
+                    <option value="@g" selected="@(isSelected ? "selected" : null)">@g</option>
+                }
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="hire-date">Date d'embauche</label>
+            <input type="date" name="DateOfJoining" class="form-control"
                     value="@(dateOfJoining != DateTime.MinValue ? dateOfJoining.ToString("yyyy-MM-dd") : "")" />
-
-
-                <button type="submit" class="btn btn-primary">Rechercher</button>
-                <a href="/Employee/Index" class="btn btn-outline-primary">Réinitialiser</a>
-            </form>
-
         </div>
-    </div>
-
-    <div class="card">
-        <div class="card-header">Liste des employés</div>
-        <div class="card-body">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Matricule</th>
-                        <th>Nom</th>
-                        <th>Département</th>
-                        <th>Poste</th>
-                        <th>Date d'entrée</th>
-                        <th>Statut</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (!Model.Any())
-                    {
-                        <tr><td colspan="5" style="text-align:center; font-style:italic;">Aucun employé trouvé</td></tr>
-                    }
-                    else
-                    {
-                        foreach (var emp in Model)
-                        {
-                            <tr>
-                                <td>@emp.Name</td>
-                                <td>@emp.EmployeeName</td>
-                                <td>@emp.Department</td>
-                                <td>@emp.Designation</td>
-                                <td>@emp.DateOfJoining.ToString("dd/MM/yyyy")</td>
-                                <td>@emp.Status</td>
-                                <td>
-                                    <a asp-action="Index" 
-                                        asp-controller="Salary" 
-                                        asp-route-employeeId="@emp.Name" 
-                                        class="btn btn-sm btn-info">
-                                            Voir les salaires
-                                    </a>
-                                </td>
-                            </tr>
-                        }
-                    }
-                </tbody>
-            </table>
-            <div class="pagination mt-3">
-                @if ((int)ViewBag.CurrentPage > 1)
-                {
-                    <a asp-action="Index" asp-route-page="@(ViewBag.CurrentPage - 1)" asp-route-name="@ViewBag.Name" asp-route-department="@ViewBag.Department" asp-route-status="@ViewBag.Status" class="btn btn-outline-primary btn-sm">&laquo;</a>
-                }
-
-                @for (int i = 1; i <= (int)ViewBag.TotalPages; i++)
-                {
-                    <a asp-action="Index" asp-route-page="@i" asp-route-name="@ViewBag.Name" asp-route-department="@ViewBag.Department" asp-route-status="@ViewBag.Status"
-                    class="btn btn-sm @(i == (int)ViewBag.CurrentPage ? "btn-primary" : "btn-outline-primary")">@i</a>
-                }
-
-                @if ((int)ViewBag.CurrentPage < (int)ViewBag.TotalPages)
-                {
-                    <a asp-action="Index" asp-route-page="@(ViewBag.CurrentPage + 1)" asp-route-name="@ViewBag.Name" asp-route-department="@ViewBag.Department" asp-route-status="@ViewBag.Status" class="btn btn-outline-primary btn-sm">&raquo;</a>
-                }
-            </div>
-
+                
+        <div class="form-group">
+            <button type="submit" class="search-btn">
+                <i class="fas fa-search"></i> Rechercher
+            </button>
         </div>
+    </form>
+</div>
+
+<div class="results-card">
+    <table>
+        <thead>
+            <tr>
+                <th>Matricule</th>
+                <th>Nom</th>
+                <th>Date Naissance</th>
+                <th>Date Embauche</th>
+                <th>Statut</th>
+                <th>Genre</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        @if (!Model.Any())
+        {
+            <tr><td colspan="5" style="text-align:center; font-style:italic;">Aucun employé trouvé</td></tr>
+        }
+        else
+        {
+            foreach (var emp in Model)
+            {
+                <tr>
+                    <td>@emp.Name</td>
+                    <td>@emp.EmployeeName</td>
+                    <td>@emp.DateOfBirth.ToString("dd/MM/yyyy")</td>
+                    <td>@emp.DateOfJoining.ToString("dd/MM/yyyy")</td>
+                    <td>@emp.Gender</td>
+                    <td>@emp.Status</td>
+                    <td>
+                        <a asp-action="Index" 
+                            asp-controller="Salary" 
+                            asp-route-employeeId="@emp.Name" 
+                            class="action-btn">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+            }
+        }
+        </tbody>
+    </table>
+    
+    <div class="pagination">
+        @if ((int)ViewBag.CurrentPage > 1)
+        {
+            <a asp-action="Index" asp-route-page="@(ViewBag.CurrentPage - 1)"
+            asp-route-name="@ViewBag.FilterName" asp-route-department="@ViewBag.FilterDepartment"
+            asp-route-status="@ViewBag.FilterStatus" asp-route-designation="@ViewBag.FilterDesignation"
+            asp-route-dateOfJoining="@ViewBag.FilterDateOfJoining" asp-route-gender="@ViewBag.FilterGender"
+            class="page-btn"><i class="fas fa-chevron-left"></i></a>
+        }
+
+        @for (int i = 1; i <= (int)ViewBag.TotalPages; i++)
+        {
+            bool isCurrent = (i == (int)ViewBag.CurrentPage);
+            <a asp-action="Index" asp-route-page="@i"
+            asp-route-name="@ViewBag.FilterName" asp-route-department="@ViewBag.FilterDepartment"
+            asp-route-status="@ViewBag.FilterStatus" asp-route-designation="@ViewBag.FilterDesignation"
+            asp-route-dateOfJoining="@ViewBag.FilterDateOfJoining" asp-route-gender="@ViewBag.FilterGender"
+            class="page-btn @(isCurrent ? "active" : "")">@i</a>
+        }
+
+        @if ((int)ViewBag.CurrentPage < (int)ViewBag.TotalPages)
+        {
+            <a asp-action="Index" asp-route-page="@(ViewBag.CurrentPage + 1)"
+            asp-route-name="@ViewBag.FilterName" asp-route-department="@ViewBag.FilterDepartment"
+            asp-route-status="@ViewBag.FilterStatus" asp-route-designation="@ViewBag.FilterDesignation"
+            asp-route-dateOfJoining="@ViewBag.FilterDateOfJoining" asp-route-gender="@ViewBag.FilterGender"
+            class="page-btn"><i class="fas fa-chevron-right"></i></a>
+        }
     </div>
+</div>

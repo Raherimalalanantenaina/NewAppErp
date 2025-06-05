@@ -47,8 +47,8 @@ namespace NewAppErp.Services.Salary.SalarySlips
                 new object[] { "employee", "=", employeeId }
             };
 
-            var url = $"{_baseUrl}api/resource/Salary Slip?fields={JsonSerializer.Serialize(fields)}&filters={Uri.EscapeDataString(JsonSerializer.Serialize(filters))}";
-
+            var url = $"{_baseUrl}api/resource/Salary Slip?fields={JsonSerializer.Serialize(fields)}&filters={Uri.EscapeDataString(JsonSerializer.Serialize(filters))}&limit_start=0";
+            
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Add("Cookie", $"sid={sid}");
             request.Headers.Add("Accept", "application/json");
@@ -201,10 +201,6 @@ namespace NewAppErp.Services.Salary.SalarySlips
                 .AddTabStops(new TabStop(150, TabAlignment.LEFT))
                 .Add(new Text("Nom:").AddStyle(normalStyle)).Add(new Tab())
                 .Add(new Text(slip.EmployeeName).AddStyle(normalStyle)).Add("\n")
-                .Add(new Text("Département:").AddStyle(normalStyle)).Add(new Tab())
-                .Add(new Text(slip.Department).AddStyle(normalStyle)).Add("\n")
-                .Add(new Text("Poste:").AddStyle(normalStyle)).Add(new Tab())
-                .Add(new Text(slip.Designation).AddStyle(normalStyle)).Add("\n")
                 .Add(new Text("Période:").AddStyle(normalStyle)).Add(new Tab())
                 .Add(new Text($"{slip.StartDate:dd/MM/yyyy} - {slip.EndDate:dd/MM/yyyy}").AddStyle(normalStyle))
                 .SetMarginBottom(15);
@@ -291,8 +287,8 @@ namespace NewAppErp.Services.Salary.SalarySlips
             if (string.IsNullOrEmpty(sid))
                 throw new UnauthorizedAccessException("Session ID non trouvé.");
 
-            var fields = new[] { "name", "employee", "employee_name", "department", "designation", "net_pay", "start_date" };
-            var url = $"{_baseUrl}api/resource/Salary Slip?fields={JsonSerializer.Serialize(fields)}";
+            var fields = new[] { "name", "employee", "employee_name", "department", "designation", "net_pay", "start_date","gross_pay","total_deduction" };
+            var url = $"{_baseUrl}api/resource/Salary Slip?fields={JsonSerializer.Serialize(fields)}&limit_start=0&limit_page_length=0&order_by=name%20asc";
 
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Add("Cookie", $"sid={sid}");
@@ -314,6 +310,8 @@ namespace NewAppErp.Services.Salary.SalarySlips
                     Department = item["department"]?.ToString(),
                     Designation = item["designation"]?.ToString(),
                     StartDate = item["start_date"]?.ToObject<DateTime?>(),
+                    GrossPay = item["gross_pay"]?.Value<decimal>() ?? 0,
+                    TotalDeduction = item["total_deduction"]?.Value<decimal>() ?? 0,
                     NetPay = item["net_pay"]?.Value<decimal>() ?? 0,
                     Earnings = new List<SalaryComponent>(),
                     Deductions = new List<SalaryComponent>()

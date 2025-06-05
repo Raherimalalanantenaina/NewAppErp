@@ -9,8 +9,9 @@ namespace NewAppErp.Services.Employer
     public interface IEmployeeService
     {
         //Task<List<Employee>> GetEmployees();
-        Task<List<Employee>> GetEmployees(string? name = null, string? department = null, string? status = null, string? designation = null, DateTime? dateOfJoining = null, string? gender = null);
+        //Task<List<Employee>> GetEmployees(string? name = null, string? department = null, string? status = null, string? designation = null, DateTime? dateOfJoining = null, string? gender = null);
         Task<Employee?> GetEmployeeById(string id);
+        Task<PagedResult<Employee>> GetEmployees(string? name = null, string? department = null, string? status = null, string? designation = null, DateTime? dateOfJoining = null, string? gender = null, int limit = 10, int offset = 0);
 
     }
 }
