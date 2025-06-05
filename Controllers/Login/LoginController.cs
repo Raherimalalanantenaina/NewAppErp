@@ -56,7 +56,7 @@ namespace NewAppErp.Controllers.Login
                     "CookieAuth",
                     new ClaimsPrincipal(claimsIdentity));
 
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Salaireliste", "Salary");
             }
 
             ModelState.AddModelError(string.Empty, "Identifiants incorrects");
@@ -69,7 +69,7 @@ namespace NewAppErp.Controllers.Login
         {
             await HttpContext.SignOutAsync("CookieAuth");
             HttpContext.Session.Remove("AuthToken");
-            return RedirectToAction("Index", "Login");
+            return RedirectToAction("Index","Login");
         }
     }
 }

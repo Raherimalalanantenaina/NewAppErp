@@ -8,5 +8,9 @@ public class EmployeeSalaryComponentGridViewModel
     public string Designation { get; set; }
     public Dictionary<string, decimal> Components { get; set; } = new(); // clé = nom composant
     public decimal NetPay { get; set; }
+
+    public decimal GrossPay { get; set; }
+
+    public decimal TotalDeduction { get; set; }
     public DateTime? StartDate { get; set; }
 }

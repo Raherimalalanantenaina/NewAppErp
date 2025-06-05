@@ -33,7 +33,7 @@ namespace NewAppErp.Models.ImportDto
             {
                 foreach (var error in response.Errors)
                 {
-                    Errors.Add($"Line {error.Line} - Employee {error.Employee}: {error.Error}");
+                    Errors.Add(error);
                 }
             }
         }

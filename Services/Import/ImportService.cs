@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using NewAppErp.Models.ImportDto;
+using Newtonsoft.Json.Linq;
 
 namespace NewAppErp.Services.Import;
 
@@ -10,12 +11,14 @@ public class ImportService : IImportService
     private readonly HttpClient _httpClient;
     private readonly string _baseUrl;
     private readonly IHttpContextAccessor _httpContextAccessor;
+     private readonly ILogger<ImportService> _logger;
 
-    public ImportService(HttpClient httpClient, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+    public ImportService(HttpClient httpClient, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, ILogger<ImportService> logger)
     {
         _httpClient = httpClient;
         _baseUrl = configuration["NewAppErp:BaseUrl"];
         _httpContextAccessor = httpContextAccessor;
+        _logger = logger;
     }
 
     private string? GetSessionId()
@@ -186,7 +189,7 @@ public class ImportService : IImportService
             else
                 dto.SalaireBase = salaireBase;
 
-            dto.Company = columns[3];
+            dto.Salaire = columns[3];
 
             if (errors.Any())
                 result.Errors.Add($"SalaireEmployé - Ligne {lineIndex} : {string.Join(" ; ", errors)}");
@@ -197,49 +200,71 @@ public class ImportService : IImportService
         return result;
     }
 
-public async Task<ImportResponseDto> EnvoyerImportDataAsync(ImportDataDto importData)
+    public async Task<ImportResponseDto> EnvoyerImportDataAsync(ImportDataDto importData)
+    {
+        try
         {
-            try
+            var sid = GetSessionId();
+            var requestUrl = $"{_baseUrl}api/method/import_app.api.traitementdata.import_bulk_data";
+
+            var jsonOptions = new JsonSerializerOptions
             {
-                var sid = GetSessionId();
-                var requestUrl = $"{_baseUrl}api/method/import_app.api.traitementdata.import_bulk_data";
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                WriteIndented = false
+            };
 
-                var jsonOptions = new JsonSerializerOptions 
-                { 
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                    WriteIndented = false
-                };
-
-                var request = new HttpRequestMessage(HttpMethod.Post, requestUrl)
-                {
-                    Content = new StringContent(JsonSerializer.Serialize(importData, jsonOptions), 
-                    Encoding.UTF8, 
-                    "application/json")
-                };
-
-                request.Headers.Add("Cookie", $"sid={sid}");
-                request.Headers.Add("Accept", "application/json");
-
-                var response = await _httpClient.SendAsync(request);
-                var content = await response.Content.ReadAsStringAsync();
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    throw new HttpRequestException($"API Error: {response.StatusCode} - {content}");
-                }
-
-                var result = JsonSerializer.Deserialize<FrappeApiResult<ImportResponseDto>>(
-                    content, 
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-                return result?.Message ?? throw new InvalidOperationException("Invalid API response format");
-            }
-            catch (Exception ex)
+            var request = new HttpRequestMessage(HttpMethod.Post, requestUrl)
             {
-                throw ex;
-            }
+                Content = new StringContent(JsonSerializer.Serialize(importData, jsonOptions), Encoding.UTF8, "application/json")
+            };
+
+            request.Headers.Add("Cookie", $"sid={sid}");
+            request.Headers.Add("Accept", "application/json");
+
+            var response = await _httpClient.SendAsync(request);
+            var content = await response.Content.ReadAsStringAsync();
+
+            var json = JObject.Parse(content)["message"];
+
+            var importreponse = new ImportResponseDto
+            {
+                Success = json["success"]?.Value<bool>() ?? false,
+                Message = json["message"]?.ToString(),
+                Counts = json["counts"] != null ? new ImportCountsDto
+                {
+                    Employees = json["counts"]["employees"]?.Value<int>() ?? 0,
+                    Structures = json["counts"]["structures"]?.Value<int>() ?? 0,
+                    Slips = json["counts"]["slips"]?.Value<int>() ?? 0
+                } : null,
+                Errors = json["errors"] != null
+                    ? json["errors"].Select(e => e.ToString()).ToList()
+                    : new List<string>()
+            };
+
+            return importreponse;
         }
+        catch (Exception ex)
+        {
+            throw new Exception("Erreur lors de l'importation", ex);
+        }
+    }
 
+    public async Task<bool> ResetDataAsync()
+    {
+        var sid = GetSessionId();
+        var requestUrl = $"{_baseUrl}api/method/import_app.api.reset_data.reset_data";
 
-    
+        var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
+        request.Headers.Add("Cookie", $"sid={sid}");
+        request.Headers.Add("Accept", "application/json");
+
+        var response = await _httpClient.SendAsync(request);
+        var content = await response.Content.ReadAsStringAsync();
+
+        if (!response.IsSuccessStatusCode)
+            throw new HttpRequestException($"Erreur API: {response.StatusCode} - {content}");
+
+        return true;
+    }
+
 }

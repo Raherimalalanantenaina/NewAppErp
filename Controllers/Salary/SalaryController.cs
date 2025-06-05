@@ -25,10 +25,11 @@ namespace NewAppErp.Controllers.Salary
             _utilService = utilService;
         }
         [HttpGet]
-        public async Task<IActionResult> Index(string employeeId, int? mois, int? annee, int page = 1, int pageSize = 10)
+        public async Task<IActionResult> Index(string employeeId, int? mois, int? annee, int page = 1)
         {
             try
             {
+                int pageSize = 10;
                 var employee = await _employeeService.GetEmployeeById(employeeId);
                 var salaries = await _salarySlipService.GetSalarySlipsByEmployee(employeeId, mois, annee);
 
@@ -76,9 +77,10 @@ namespace NewAppErp.Controllers.Salary
             var pdfBytes = _salarySlipService.GenerateSalarySlipPdf(slip);
             return File(pdfBytes, "application/pdf", $"FichePaie_{slip.EmployeeName}.pdf");
         }
-        public async Task<IActionResult> Salaireliste(int? month, int? year)
+        public async Task<IActionResult> Salaireliste(int? mois, int? annee,int page = 1)
         {
-            var slips = await _salarySlipService.GetSalarySlipsAsync(month, year);
+            int pageSize = 10;
+            var slips = await _salarySlipService.GetSalarySlipsAsync(mois, annee);
             var componentNames = await _utilService.GetAllSalaryComponents(); 
 
             var viewModels = new List<EmployeeSalaryComponentGridViewModel>();
@@ -91,6 +93,8 @@ namespace NewAppErp.Controllers.Salary
                     Department = slip.Department,
                     Designation = slip.Designation,
                     NetPay = slip.NetPay,
+                    GrossPay=slip.GrossPay,
+                    TotalDeduction=slip.TotalDeduction,
                     Components = new Dictionary<string, decimal>(),
                     StartDate = slip.StartDate
                 };
@@ -112,17 +116,27 @@ namespace NewAppErp.Controllers.Salary
                 foreach (var deduction in slip.Deductions)
                 {
                     if (model.Components.ContainsKey(deduction.SalaryComponentName))
-                        model.Components[deduction.SalaryComponentName] = -deduction.Amount;
+                        model.Components[deduction.SalaryComponentName] = deduction.Amount;
                 }
 
                 viewModels.Add(model);
             }
+            int totalItems = viewModels.Count;
+            int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            var pagedSalaries = viewModels
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
 
             var totals = _utilService.CalculerTotaux(viewModels, componentNames);
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
             ViewBag.ComponentNames = componentNames;
             ViewBag.ComponentTotals = totals;
-            return View(viewModels);
-
+            ViewBag.Mois = mois;
+            ViewBag.Annee = annee;
+            return View(pagedSalaries);
         }
 
     }

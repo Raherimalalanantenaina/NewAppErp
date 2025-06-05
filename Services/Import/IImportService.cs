@@ -8,4 +8,5 @@ public interface IImportService
     Task<ImportResult> TraiterSalaryElementCsvAsync(Stream fileStream);
     Task<ImportResult> TraiterSalaryEmpCsvAsync(Stream fileStream);
     Task<ImportResponseDto> EnvoyerImportDataAsync(ImportDataDto importData);
+    Task<bool> ResetDataAsync();
 }

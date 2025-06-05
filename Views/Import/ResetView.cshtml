@@ -1,0 +1,20 @@
+@{
+    ViewData["Title"] = "Réinitialisation des données";
+}
+
+<h2>Réinitialisation des données</h2>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success">@TempData["Message"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<form asp-action="ResetData" method="post">
+    <button type="submit" class="btn btn-danger" onclick="return confirm('Confirmer la réinitialisation ?')">
+        Réinitialiser les données
+    </button>
+</form>

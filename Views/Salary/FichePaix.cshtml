@@ -3,81 +3,102 @@
     ViewBag.Title = "Fiche de paie";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-<link href="~/css/style.css" rel="stylesheet" />
-
-<div class="white-box">
-    <div class="form-title">Fiche de paie - @Model.EmployeeName</div>
-
-    <div class="d-flex justify-content-between mb-4">
-        <div>
-            <p><strong>Employé :</strong> @Model.EmployeeName (@Model.Employee)</p>
-            <p><strong>Poste :</strong> @Model.Designation</p>
-            <p><strong>Département :</strong> @Model.Department</p>
-            <p><strong>Structure salariale :</strong> @Model.SalaryStructure</p>
+<div class="payroll-container">
+        <div class="payroll-header">
+            <h1>FICHE DE PAIE</h1>
+            <p>Période de paie: @Model.StartDate?.ToString("MMMM yyyy", System.Globalization.CultureInfo.InvariantCulture)</p>
         </div>
-        <div>
-            <p><strong>Entreprise :</strong> @Model.Company</p>
-            <p><strong>Période :</strong> @Model.StartDate?.ToString("dd/MM/yyyy") - @Model.EndDate?.ToString("dd/MM/yyyy")</p>
-            <p><strong>Date de génération :</strong> @Model.PostingDate?.ToString("dd/MM/yyyy")</p>
-            <p>Mois de paie : @Model.StartDate?.ToString("MMMM yyyy", System.Globalization.CultureInfo.InvariantCulture)</p>
+        
+        <div class="employee-info">
+            <div class="info-block">
+                <h3>Informations Employé</h3>
+                <div class="info-row">
+                    <div class="info-label">Nom:</div>
+                    <div class="info-value">@Model.EmployeeName</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Matricule:</div>
+                    <div class="info-value">@Model.Employee</div>
+                </div>
+            </div>
+            
+            <div class="info-block">
+                <h3>Informations Paie</h3>
+                <div class="info-row">
+                    <div class="info-label">Date de generation:</div>
+                    <div class="info-value">@Model.PostingDate?.ToString("dd/MM/yyyy")</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="payroll-period">
+            Période du: @Model.StartDate?.ToString("dd/MM/yyyy") - @Model.EndDate?.ToString("dd/MM/yyyy")
+        </div>
+        
+        <div class="payroll-details">
+            <div class="earnings">
+                <h3 class="section-title">GAINS</h3>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Abbr</th>
+                            <th class="amount">Montant</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var earning in Model.Earnings)
+                        {
+                            <tr>
+                                <td>@earning.SalaryComponentName</td>
+                                <td>@earning.Abbreviation</td>
+                                <td class="amount">@earning.Amount.ToString("N0")</td>
+                            </tr>
+                        }       
+                        <tr class="total-row">
+                            <td>Total Gains</td>
+                            <td class="amount">@Model.GrossPay.ToString("N0")</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="deductions">
+                <h3 class="section-title">DÉDUCTIONS</h3>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Abbr</th>
+                            <th class="amount">Montant</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var deduction in Model.Deductions)
+                        {
+                            <tr>
+                                <td>@deduction.SalaryComponentName</td>
+                                <td>@deduction.Abbreviation</td>
+                                <td class="amount">@deduction.Amount.ToString("N0")</td>
+                            </tr>
+                        }
+                        <tr class="total-row">
+                            <td>Total Déductions</td>
+                            <td colspan="1"></td>
+                            <td class="amount">@Model.TotalDeduction.ToString("N0")</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="payroll-summary">
+            <div class="net-pay">
+                Salaire Net: <span class="net-pay-amount">@Model.NetPay.ToString("N0")</span>
+            </div>
+            
+            <div class="payroll-actions">
+                <a asp-controller="Salary" asp-action="ExportPdf" asp-route-name="@Model.Name" target="_blank" class="btn btn-sm btn-primary"><i class="fas fa-download"></i> Télécharger PDF</a>
+            </div>
         </div>
     </div>
-
-    <div class="section-title">Gains</div>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Description</th>
-                <th>Abbr</th>
-                <th class="text-end">Montant</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var earning in Model.Earnings)
-            {
-                <tr>
-                    <td>@earning.SalaryComponentName</td>
-                    <td>@earning.Abbreviation</td>
-                    <td class="text-end">@earning.Amount.ToString("N2")</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-
-    <div class="section-title mt-3">Déductions</div>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Description</th>
-                <th>Abbr</th>
-                <th class="text-end">Montant</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var deduction in Model.Deductions)
-            {
-                <tr>
-                    <td>@deduction.SalaryComponentName</td>
-                    <td>@deduction.Abbreviation</td>
-                    <td class="text-end">@deduction.Amount.ToString("N2")</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-
-    <div class="net-pay-box mt-4">
-        Salaire Net à payer : @Model.NetPay.ToString("N2") Ar<br />
-        <small class="text-muted">(@Model.TotalInWords)</small>
-    </div>
-
-    <div class="d-flex justify-content-between mt-3">
-        <div>
-            <p><strong>Jours ouvrés :</strong> @Model.TotalWorkingDays</p>
-            <p><strong>Jours payés :</strong> @Model.PaymentDays</p>
-        </div>
-        <div>
-            <p><strong>Payé brut :</strong> @Model.GrossPay.ToString("N2") Ar</p>
-            <p><strong>Déductions :</strong> @Model.TotalDeduction.ToString("N2") Ar</p>
-        </div>
-    </div>
-</div>

@@ -3,74 +3,110 @@
     Layout = "~/Views/Shared/_Layout.cshtml"; 
     var components = ViewBag.ComponentNames as List<string> ?? new List<string>();
 }
-<form method="get" asp-action="Salaireliste" class="mb-4">
-    <div class="form-row d-flex gap-2 align-items-end">
-        <div class="form-group">
-            <label for="month">Mois</label>
-            <select id="month" name="month" class="form-control">
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Tableau des Salaires</h2>
+        <form method="get" asp-action="Salaireliste" class="mb-4">
+        <div class="filters">
+            <select id="month-select" name="mois">
                 <option value="">-- Tous --</option>
                 @for (int m = 1; m <= 12; m++)
                 {
-                    <option value="@m">
+                    bool isSelected = (ViewBag.Mois == m);
+                    <option value="@m" selected="@(isSelected ? "selected" : null)">
                         @System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(m)
                     </option>
                 }
             </select>
+            <input type="number" id="year" name="annee" class="form-control"
+                 placeholder="Ex: 2025" min="2000" max="2100" value="@ViewBag.Annee"/>
+            <button type="submit" id="apply-filters" style="padding: 8px 15px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer;">
+                Appliquer
+            </button>
         </div>
-
-        <div class="form-group">
-            <label for="year">Année</label>
-            <input type="number" id="year" name="year" class="form-control"
-                 placeholder="Ex: 2025" min="2000" max="2100" />
-        </div>
-
-        <div class="form-group">
-            <button type="submit" class="btn btn-primary">Filtrer</button>
-        </div>
+        </form>
     </div>
-</form>
-
-
-<table class="table table-bordered table-striped">
-    <thead>
-        <tr>
-            <th>Employé</th>
-            <th>mois</th>
-            @foreach (var comp in components)
-            {
-                <th>@comp</th>
-            }
-
-            <th>Net à Payer</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
+    
+    <table>
+        <thead>
             <tr>
-                <td>@item.EmployeeName</td>
-                <td>@item.StartDate?.ToString("MMMM yyyy", System.Globalization.CultureInfo.InvariantCulture)</td>
+                <th>Employé</th>
+                <th class="text-right">Mois Annee</th>
                 @foreach (var comp in components)
                 {
-                    <td>
-                        @String.Format("{0:N2}", item.Components.ContainsKey(comp) ? item.Components[comp] : 0)
-                    </td>
+                    <th class="text-right">@comp</th>
                 }
-                <td><strong>@String.Format("{0:N2}", item.NetPay)</strong></td>
+                <th class="text-right">Net à Payer</th>
+                <th class="text-right">Total Earning</th>
+                <th class="text-right">Total Deduction</th>
             </tr>
-        }
-        <tr>
-        <td><strong>Total</strong></td>
-        <td colspan="1"></td> <!-- Ajuste selon tes colonnes fixes -->
-        @foreach (var name in ViewBag.ComponentNames as List<string>)
-        {
-            var total = ((Dictionary<string, decimal>)ViewBag.ComponentTotals)[name];
-            <td class="text-end fw-bold">@total.ToString("N2")</td>
-        }
-        <td>
-            @(((Dictionary<string, decimal>)ViewBag.ComponentTotals)["NetPay"].ToString("N2"))
-        </td>
-        </tr>
-    </tr>
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="text-bold">Total</td>
+                <td colspan="1"></td> <!-- Ajuste selon tes colonnes fixes -->
+                @foreach (var name in ViewBag.ComponentNames as List<string>)
+                {
+                    var total = ((Dictionary<string, decimal>)ViewBag.ComponentTotals)[name];
+                    <td class="text-right currency">@String.Format("{0:N0}", Math.Abs(total))</td>
+                }
+                <td class="text-right currency">
+                    @String.Format("{0:N0}", Math.Abs(ViewBag.ComponentTotals != null && ((Dictionary<string, decimal>)ViewBag.ComponentTotals).ContainsKey("NetPay") 
+                        ? ((Dictionary<string, decimal>)ViewBag.ComponentTotals)["NetPay"] 
+                        : 0m))
+                </td>
+                <td class="text-right currency">
+                    @String.Format("{0:N0}", Math.Abs(ViewBag.ComponentTotals != null && ((Dictionary<string, decimal>)ViewBag.ComponentTotals).ContainsKey("Gain") 
+                        ? ((Dictionary<string, decimal>)ViewBag.ComponentTotals)["Gain"] 
+                        : 0m))
+                </td>
+                <td class="text-right currency">
+                    @String.Format("{0:N0}", Math.Abs(ViewBag.ComponentTotals != null && ((Dictionary<string, decimal>)ViewBag.ComponentTotals).ContainsKey("Deduction") 
+                        ? ((Dictionary<string, decimal>)ViewBag.ComponentTotals)["Deduction"] 
+                        : 0m))
+                </td>
+            </tr>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="text-bold">@item.EmployeeName</td>
+                    <td class="text-right currency">@item.StartDate?.ToString("MMMM yyyy", System.Globalization.CultureInfo.InvariantCulture)</td>
+                    @foreach (var comp in components)
+                    {
+                        <td class="text-right currency">
+                            @String.Format("{0:N0}", Math.Abs(item.Components.ContainsKey(comp) ? item.Components[comp] : 0m)) 
+                        </td>
+                    }
+                    <td class="text-right currency"><strong>@String.Format("{0:N0}", item.NetPay)</strong></td>
+                    <td class="text-right currency"><strong>@String.Format("{0:N0}", item.GrossPay)</strong></td>
+                    <td class="text-right currency"><strong>@String.Format("{0:N0}", item.TotalDeduction)</strong></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div class="pagination"></div>
+            @if ((int)ViewBag.CurrentPage > 1)
+            {
+                <a asp-action="Salaireliste" asp-route-page="@(ViewBag.CurrentPage - 1)"
+                asp-route-mois="@ViewBag.Mois"
+                asp-route-annee="@ViewBag.Annee"
+                class="page-btn"><i class="fas fa-chevron-left"></i></a>
+            }
+
+            @for (int i = 1; i <= (int)ViewBag.TotalPages; i++)
+            {
+                <a asp-action="Salaireliste" asp-route-page="@i"
+                asp-route-mois="@ViewBag.Mois"
+                asp-route-annee="@ViewBag.Annee"
+                class="page-btn @(i == (int)ViewBag.CurrentPage ? "page-btn" : "page-btn")">@i</a>
+            }
+
+            @if ((int)ViewBag.CurrentPage < (int)ViewBag.TotalPages)
+            {
+                <a asp-action="Salaireliste" asp-route-page="@(ViewBag.CurrentPage + 1)"
+                asp-route-mois="@ViewBag.Mois"
+                asp-route-annee="@ViewBag.Annee"
+                class="page-btn"><i class="fas fa-chevron-right"></i></a>
+            }
+        </div>
+</div>

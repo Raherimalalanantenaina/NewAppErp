@@ -1,113 +1,121 @@
 @{
     Layout = "~/Views/Shared/_Layout.cshtml"; // Modifie selon ton projet
 }
-
-<div class="erpnext-main">
-    <div class="employee-profile card fade-in">
-        <div class="profile-header">
-            <div class="profile-photo">
-            <img src="~/images/emp.jpeg" alt="Photo" />
-            </div>
-            <div class="profile-info">
+<div class="employee-header">
+        <div class="employee-avatar">JD</div>
+        <div class="employee-info">
             <h2>@Model.Employee?.EmployeeName</h2>
-            <p class="employee-id">@Model.Employee?.Name</p>
-            <p class="status active">Statut : @Model.Employee?.Status</p>
+            <p>Matricule: @Model.Employee?.Name</p>
+        </div>
+    </div>
+    
+    <div class="employee-details">
+        <div class="detail-card">
+            <h3>Informations Personnelles</h3>
+            <div class="detail-row">
+                <div class="detail-label">Date de naissance:</div>
+                <div class="detail-value">@Model.Employee?.DateOfBirth.ToString("yyyy-MM-dd")</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Genre:</div>
+                <div class="detail-value">@Model.Employee?.Gender</div>
             </div>
         </div>
-        <div class="profile-body">
-            <div class="info-row">
-            <div><strong>Département :</strong>@Model.Employee?.Department</div>
-            <div><strong>DateNaissance :</strong>@Model.Employee?.DateOfBirth.ToString("yyyy-MM-dd")</div>
+        
+        <div class="detail-card">
+            <h3>Informations Professionnelles</h3>
+            <div class="detail-row">
+                <div class="detail-label">Date d'embauche:</div>
+                <div class="detail-value">@Model.Employee?.DateOfJoining.ToString("yyyy-MM-dd")</div>
             </div>
-            <div class="info-row">
-            <div><strong>Date d'embauche :</strong> @Model.Employee?.DateOfJoining.ToString("yyyy-MM-dd")</div>
-            <div><strong>Sexe :</strong> @Model.Employee?.Gender</div>
-            </div>
-            <div class="info-row">
-            <div><strong>Poste :</strong>@Model.Employee?.Designation</div>
+            <div class="detail-row">
+                <div class="detail-label">Statut:</div>
+                <div class="detail-value" style="color: #1ea672;">@Model.Employee?.Status</div>
             </div>
         </div>
     </div>
-
-
-    <div class="card fade-in">
-        <div class="card-header">
-            Salaires par Mois
-
-            <form class="form-inline" method="get" asp-action="Index" style="display: flex; gap: 0.5rem;">
+    
+    <div class="detail-card">
+        <div class="salary-filters">
+            <h3>Historique des Salaires</h3>
+            <form class="form-inline" method="get" asp-action="Index">
                 <input type="hidden" name="employeeId" value="@Model.Employee.Name" />
-
-                <select name="mois" class="form-control">
-                    <option value="">Tous les mois</option>
-                    @for (int m = 1; m <= 12; m++)
-                    {
-                        <option value="@m">@System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(m)</option>
-                    }
-                </select>
-
-                <select name="annee" class="form-control">
-                    <option value="">Toutes les années</option>
-                    @for (int y = DateTime.Now.Year; y >= DateTime.Now.Year - 10; y--)
-                    {
-                        <option value="@y">@y</option>
-                    }
-                </select>
-
-                <button type="submit" class="btn btn-primary">Filtrer</button>
+                <div class="filters-left">
+                    <input type="number" id="year" name="annee" class="form-control"
+                        placeholder="Ex: 2025" min="2000" max="2100" value="@ViewBag.Annee"/>
+                    @* <select id="year-select" name="annee">
+                        <option value="">Toutes les années</option>
+                        @for (int y = DateTime.Now.Year; y >= DateTime.Now.Year - 10; y--)
+                        {
+                            bool isSelected = (ViewBag.Annee == y);
+                            <option value="@y" selected="@(isSelected ? "selected" : null)">@y</option>
+                        }
+                    </select> *@
+                    <select id="month-select" name="mois">
+                        <option value="">Tous les mois</option>
+                        @for (int m = 1; m <= 12; m++)
+                        {
+                            bool isSelected = (ViewBag.Mois == m);
+                            <option value="@m" selected="@(isSelected ? "selected" : null)">@System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(m)</option>
+                        }
+                    </select>
+                    <button type="submit" id="apply-filters" style="padding: 8px 15px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer;">
+                        Appliquer
+                    </button>
+                </div>
             </form>
-
         </div>
-        <div class="card-body">
-            <table class="table">
-                <thead>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Mois/Année</th>
+                    <th class="text-right">Salaire net</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var s in Model.Salaries)
+                {
                     <tr>
-                        <th>Mois</th>
-                        <th>Total Net</th>
-                        <th>Action</th>
+                        <td>@s.StartDate.ToString("MMMM yyyy")</td>
+                        <td class="text-right">@s.NetPay.ToString("N0")</td>
+                        <td class="text-center">
+                            <a asp-controller="Salary" asp-action="FichePaix" asp-route-name="@s.Name" class="view-btn"><i class="fas fa-eye"></i></a>
+                            @* <a asp-controller="Salary" asp-action="ExportPdf" asp-route-name="@s.Name" target="_blank" class="btn btn-sm btn-primary">PDF</a> *@
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    @foreach (var s in Model.Salaries)
-                    {
-                        <tr>
-                            <td>@s.StartDate.ToString("MMMM yyyy")</td>
-                            <td>@s.NetPay.ToString("N2")</td>
-                            <td>
-                                <a asp-controller="Salary" asp-action="FichePaix" asp-route-name="@s.Name" class="btn btn-sm btn-primary">Voir détail</a>
-                                <a asp-controller="Salary" asp-action="ExportPdf" asp-route-name="@s.Name" target="_blank" class="btn btn-sm btn-primary">PDF</a>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-            <div class="pagination mt-3">
-                @if ((int)ViewBag.CurrentPage > 1)
-                {
-                    <a asp-action="Index" asp-route-page="@(ViewBag.CurrentPage - 1)"
-                    asp-route-employeeId="@ViewBag.EmployeeId"
-                    asp-route-mois="@ViewBag.Mois"
-                    asp-route-annee="@ViewBag.Annee"
-                    class="btn btn-outline-primary btn-sm">&laquo;</a>
                 }
+            </tbody>
+        </table>
+        
+        <div class="pagination">
+            @if ((int)ViewBag.CurrentPage > 1)
+            {
+                <a asp-action="Index" asp-route-page="@(ViewBag.CurrentPage - 1)"
+                asp-route-employeeId="@ViewBag.EmployeeId"
+                asp-route-mois="@ViewBag.Mois"
+                asp-route-annee="@ViewBag.Annee"
+                class="page-btn"><i class="fas fa-chevron-left"></i></a>
+            }
 
-                @for (int i = 1; i <= (int)ViewBag.TotalPages; i++)
-                {
-                    <a asp-action="Index" asp-route-page="@i"
-                    asp-route-employeeId="@ViewBag.EmployeeId"
-                    asp-route-mois="@ViewBag.Mois"
-                    asp-route-annee="@ViewBag.Annee"
-                    class="btn btn-sm @(i == (int)ViewBag.CurrentPage ? "btn-primary" : "btn-outline-primary")">@i</a>
-                }
+            @for (int i = 1; i <= (int)ViewBag.TotalPages; i++)
+            {
+                <a asp-action="Index" asp-route-page="@i"
+                asp-route-employeeId="@ViewBag.EmployeeId"
+                asp-route-mois="@ViewBag.Mois"
+                asp-route-annee="@ViewBag.Annee"
+                class="page-btn @(i == (int)ViewBag.CurrentPage ? "active" : "")">@i</a>
+            }
 
-                @if ((int)ViewBag.CurrentPage < (int)ViewBag.TotalPages)
-                {
-                    <a asp-action="Index" asp-route-page="@(ViewBag.CurrentPage + 1)"
-                    asp-route-employeeId="@ViewBag.EmployeeId"
-                    asp-route-mois="@ViewBag.Mois"
-                    asp-route-annee="@ViewBag.Annee"
-                    class="btn btn-outline-primary btn-sm">&raquo;</a>
-                }
-            </div>
+            @if ((int)ViewBag.CurrentPage < (int)ViewBag.TotalPages)
+            {
+                <a asp-action="Index" asp-route-page="@(ViewBag.CurrentPage + 1)"
+                asp-route-employeeId="@ViewBag.EmployeeId"
+                asp-route-mois="@ViewBag.Mois"
+                asp-route-annee="@ViewBag.Annee"
+                class="page-btn"><i class="fas fa-chevron-right"></i></a>
+            }
         </div>
     </div>
 </div>
