@@ -5,33 +5,14 @@
 }
 <div class="card">
     <div class="card-header">
-        <h2 class="card-title">Tableau des Salaires</h2>
-        <form method="get" asp-action="Salaireliste" class="mb-4">
-        <div class="filters">
-            <select id="month-select" name="mois">
-                <option value="">-- Tous --</option>
-                @for (int m = 1; m <= 12; m++)
-                {
-                    bool isSelected = (ViewBag.Mois == m);
-                    <option value="@m" selected="@(isSelected ? "selected" : null)">
-                        @System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(m)
-                    </option>
-                }
-            </select>
-            @* <input type="number" id="year" name="annee" class="form-control"
-                 placeholder="Ex: 2025" min="2000" max="2100" value="@ViewBag.Annee"/> *@
-            <button type="submit" id="apply-filters" style="padding: 8px 15px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer;">
-                Appliquer
-            </button>
-        </div>
-        </form>
+        <h2 class="card-title">Tableau des Salaires Employé</h2>
     </div>
     
     <table>
         <thead>
             <tr>
                 <th>Employé</th>
-                <th class="text-right">Mois</th>
+                <th class="text-right">Mois Annee</th>
                 @foreach (var comp in components)
                 {
                     <th class="text-right">@comp</th>
@@ -70,7 +51,7 @@
             {
                 <tr>
                     <td class="text-bold">@item.EmployeeName</td>
-                    <td class="text-right currency">@item.StartDate?.ToString("MMMM", System.Globalization.CultureInfo.InvariantCulture)</td>
+                    <td class="text-right currency">@item.StartDate?.ToString("MMMM yyyy", System.Globalization.CultureInfo.InvariantCulture)</td>
                     @foreach (var comp in components)
                     {
                         <td class="text-right currency">
@@ -85,25 +66,27 @@
         </tbody>
     </table>
     <div class="pagination"></div>
-                @* asp-route-annee="@ViewBag.Annee" *@
             @if ((int)ViewBag.CurrentPage > 1)
             {
-                <a asp-action="Salaireliste" asp-route-page="@(ViewBag.CurrentPage - 1)"
+                <a asp-action="SalairelisteEmp" asp-route-page="@(ViewBag.CurrentPage - 1)"
                 asp-route-mois="@ViewBag.Mois"
+                asp-route-annee="@ViewBag.Annee"
                 class="page-btn"><i class="fas fa-chevron-left"></i></a>
             }
 
             @for (int i = 1; i <= (int)ViewBag.TotalPages; i++)
             {
-                <a asp-action="Salaireliste" asp-route-page="@i"
+                <a asp-action="SalairelisteEmp" asp-route-page="@i"
                 asp-route-mois="@ViewBag.Mois"
+                asp-route-annee="@ViewBag.Annee"
                 class="page-btn @(i == (int)ViewBag.CurrentPage ? "page-btn" : "page-btn")">@i</a>
             }
 
             @if ((int)ViewBag.CurrentPage < (int)ViewBag.TotalPages)
             {
-                <a asp-action="Salaireliste" asp-route-page="@(ViewBag.CurrentPage + 1)"
+                <a asp-action="SalairelisteEmp" asp-route-page="@(ViewBag.CurrentPage + 1)"
                 asp-route-mois="@ViewBag.Mois"
+                asp-route-annee="@ViewBag.Annee"
                 class="page-btn"><i class="fas fa-chevron-right"></i></a>
             }
         </div>

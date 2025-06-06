@@ -48,7 +48,7 @@ namespace NewAppErp.Services.Salary.SalarySlips
             };
 
             var url = $"{_baseUrl}api/resource/Salary Slip?fields={JsonSerializer.Serialize(fields)}&filters={Uri.EscapeDataString(JsonSerializer.Serialize(filters))}&limit_start=0";
-            
+
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Add("Cookie", $"sid={sid}");
             request.Headers.Add("Accept", "application/json");
@@ -287,7 +287,7 @@ namespace NewAppErp.Services.Salary.SalarySlips
             if (string.IsNullOrEmpty(sid))
                 throw new UnauthorizedAccessException("Session ID non trouvé.");
 
-            var fields = new[] { "name", "employee", "employee_name", "department", "designation", "net_pay", "start_date","gross_pay","total_deduction" };
+            var fields = new[] { "name", "employee", "employee_name", "department", "designation", "net_pay", "start_date", "gross_pay", "total_deduction" };
             var url = $"{_baseUrl}api/resource/Salary Slip?fields={JsonSerializer.Serialize(fields)}&limit_start=0&limit_page_length=0&order_by=name%20asc";
 
             var request = new HttpRequestMessage(HttpMethod.Get, url);
@@ -372,6 +372,177 @@ namespace NewAppErp.Services.Salary.SalarySlips
             return slips;
         }
 
+        public async Task<List<MonthlySalaryComponentTotals>> GetMonthlySalaryComponentTotalsAsync(List<SalarySlip> slips, List<string> componentNames)
+        {
+            var result = new Dictionary<string, MonthlySalaryComponentTotals>();
+
+            foreach (var slip in slips)
+            {
+                if (slip.StartDate == null) continue;
+
+                var monthKey = slip.StartDate.Value.ToString("yyyy-MM");
+
+                if (!result.TryGetValue(monthKey, out var monthTotals))
+                {
+                    monthTotals = new MonthlySalaryComponentTotals
+                    {
+                        Month = monthKey,
+                        Components = componentNames.ToDictionary(name => name, name => 0m)
+                    };
+                    result[monthKey] = monthTotals;
+                }
+
+                monthTotals.NetPay += slip.NetPay;
+                monthTotals.GrossPay += slip.GrossPay;
+                monthTotals.TotalDeduction += slip.TotalDeduction;
+
+                foreach (var earning in slip.Earnings)
+                {
+                    if (!monthTotals.Components.ContainsKey(earning.SalaryComponentName))
+                        monthTotals.Components[earning.SalaryComponentName] = 0;
+                    monthTotals.Components[earning.SalaryComponentName] += earning.Amount;
+                }
+
+                foreach (var deduction in slip.Deductions)
+                {
+                    if (!monthTotals.Components.ContainsKey(deduction.SalaryComponentName))
+                        monthTotals.Components[deduction.SalaryComponentName] = 0;
+                    monthTotals.Components[deduction.SalaryComponentName] += deduction.Amount;
+                }
+            }
+
+            return result.Values.OrderBy(r => r.Month).ToList();
+        }
+
+
+
+        public async Task<List<EmployeeSalaryComponentGridViewModel>> BuildEmployeeSalaryViewModelsAsync(List<SalarySlip> slips, List<string> componentNames)
+        {
+            var viewModels = new List<EmployeeSalaryComponentGridViewModel>();
+
+            foreach (var slip in slips)
+            {
+
+                var model = new EmployeeSalaryComponentGridViewModel
+                {
+                    EmployeeName = slip.EmployeeName,
+                    Department = slip.Department,
+                    Designation = slip.Designation,
+                    NetPay = slip.NetPay,
+                    GrossPay = slip.GrossPay,
+                    TotalDeduction = slip.TotalDeduction,
+                    Components = componentNames.ToDictionary(name => name, name => 0m),
+                    StartDate = slip.StartDate
+                };
+
+                // Ajoute les valeurs des earnings
+                foreach (var earning in slip.Earnings)
+                {
+                    if (model.Components.ContainsKey(earning.SalaryComponentName))
+                        model.Components[earning.SalaryComponentName] = earning.Amount;
+                }
+
+                // Ajoute les valeurs des deductions
+                foreach (var deduction in slip.Deductions)
+                {
+                    if (model.Components.ContainsKey(deduction.SalaryComponentName))
+                        model.Components[deduction.SalaryComponentName] = deduction.Amount;
+                }
+
+                viewModels.Add(model);
+            }
+
+            return viewModels;
+        }
+
+       public async Task<List<MonthlySalaryChartData>> GetSalaryChartDataAsync(List<SalarySlip> slips, List<string> componentNames)
+        {
+            var result = new List<MonthlySalaryChartData>();
+
+            var grouped = slips
+                .Where(s => s.StartDate.HasValue) // On filtre ceux qui ont une date
+                .GroupBy(s => s.StartDate.Value.ToString("yyyy-MM"))
+                .OrderBy(g => g.Key);
+
+
+            foreach (var group in grouped)
+            {
+                var data = new MonthlySalaryChartData
+                {
+                    Month = group.Key,
+                    NetPay = group.Sum(s => s.NetPay),
+                    Components = componentNames.ToDictionary(name => name, name => 0m) // Initialise toutes les composantes à 0
+                };
+
+                foreach (var slip in group)
+                {
+                    foreach (var earning in slip.Earnings)
+                    {
+                        if (data.Components.ContainsKey(earning.SalaryComponentName))
+                            data.Components[earning.SalaryComponentName] += earning.Amount;
+                    }
+
+                    foreach (var deduction in slip.Deductions)
+                    {
+                        if (data.Components.ContainsKey(deduction.SalaryComponentName))
+                            data.Components[deduction.SalaryComponentName] += deduction.Amount;
+                    }
+                }
+
+                result.Add(data);
+            }
+
+            return result;
+        }
+
+        public async Task<List<EmployeeSalaryComponentGridViewModel>> BuildEmployeeSalaryViewModelsMois(List<SalarySlip> slips, List<string> componentNames)
+        {
+            var grouped = slips
+                .Where(s => s.StartDate.HasValue)
+                .GroupBy(s => new
+                {
+                    s.EmployeeName,
+                    MonthName = s.StartDate.Value.ToString("MMMM", new System.Globalization.CultureInfo("fr-FR")) // ex: "mars"
+                })
+                .OrderBy(g => g.Key.EmployeeName)
+                .ThenBy(g => DateTime.ParseExact(g.Key.MonthName, "MMMM", new System.Globalization.CultureInfo("fr-FR")));
+
+            var viewModels = new List<EmployeeSalaryComponentGridViewModel>();
+
+            foreach (var group in grouped)
+            {
+                var model = new EmployeeSalaryComponentGridViewModel
+                {
+                    EmployeeName = group.Key.EmployeeName,
+                    Department = group.First().Department,
+                    Designation = group.First().Designation,
+                    NetPay = group.Sum(s => s.NetPay),
+                    GrossPay = group.Sum(s => s.GrossPay),
+                    TotalDeduction = group.Sum(s => s.TotalDeduction),
+                    Components = componentNames.ToDictionary(name => name, name => 0m),
+                    StartDate = group.Min(s => s.StartDate)
+                };
+
+                foreach (var slip in group)
+                {
+                    foreach (var earning in slip.Earnings)
+                    {
+                        if (model.Components.ContainsKey(earning.SalaryComponentName))
+                            model.Components[earning.SalaryComponentName] += earning.Amount;
+                    }
+
+                    foreach (var deduction in slip.Deductions)
+                    {
+                        if (model.Components.ContainsKey(deduction.SalaryComponentName))
+                            model.Components[deduction.SalaryComponentName] += deduction.Amount;
+                    }
+                }
+
+                viewModels.Add(model);
+            }
+
+            return viewModels;
+        }
 
     }
 }

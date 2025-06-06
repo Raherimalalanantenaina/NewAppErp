@@ -1,0 +1,66 @@
+@model List<NewAppErp.Models.Salary.MonthlySalaryComponentTotals>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var components = ViewBag.ComponentNames as List<string> ?? new List<string>();
+}
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Tableau des Statistique Salaire</h2>
+        <form method="get" asp-action="SalaireStatistique" class="mb-4">
+        <div class="filters">
+            <input type="number" id="year" name="annee" class="form-control"
+                 placeholder="Ex: 2025" min="2000" max="2100" value="@ViewBag.Annee"/>
+            <button type="submit" id="apply-filters" style="padding: 8px 15px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer;">
+                Appliquer
+            </button>
+        </div>
+        </form>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Mois</th>
+                @foreach (var comp in components)
+                {
+                    <th class="text-right">@comp</th>
+                }
+                <th class="text-right">Total Gains</th>
+                <th class="text-right">Total Déductions</th>
+                <th class="text-right">Net à Payer</th>
+                <th class="text-right">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="text-bold">@DateTime.Parse(item.Month + "-01").ToString("MMMM yyyy", System.Globalization.CultureInfo.InvariantCulture)</td>
+
+                    @foreach (var comp in components)
+                    {
+                        <td class="text-right currency">
+                            @String.Format("{0:N0}", item.Components.ContainsKey(comp) ? item.Components[comp] : 0)
+                        </td>
+                    }
+
+                    <td class="text-right currency">@String.Format("{0:N0}", item.GrossPay)</td>
+                    <td class="text-right currency">@String.Format("{0:N0}", item.TotalDeduction)</td>
+                    <td class="text-right currency"><strong>@String.Format("{0:N0}", item.NetPay)</strong></td>
+                    <td class="text-right currency">
+                        <a asp-controller="Salary"
+                        asp-action="SalairelisteEmp"
+                        asp-route-mois="@DateTime.Parse(item.Month + "-01").Month"
+                        asp-route-annee="@DateTime.Parse(item.Month + "-01").Year"
+                        asp-route-page="1"
+                        class="view-btn">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
