@@ -1,0 +1,189 @@
+@model List<NewAppErp.Models.Salary.MonthlySalaryChartData>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var composantes = ViewBag.ComponentNames as List<string> ?? new List<string>();
+}
+
+<style>
+    .chart-card {
+        background-color: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        padding: 20px;
+        transition: var(--transition);
+        margin-top: 20px;
+    }
+
+    .chart-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .chart-wrapper {
+        position: relative;
+        height: 400px;
+        width: 100%;
+    }
+
+    .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .chart-title {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: var(--primary);
+    }
+
+    .chart-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        font-size: 13px;
+        gap: 5px;
+    }
+
+    .legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 2px;
+    }
+
+    .filters {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    input[type=number] {
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+    }
+</style>
+<div class="card">
+    <div class="card-content"></div>
+        <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-chart-line"></i> Évolution des Salaires - @ViewBag.Annee</h2>
+            <form method="get" asp-action="SalaireChart" class="mb-4">
+                <div class="filters">
+                    <input type="number" id="year" name="annee" class="form-control"
+                        placeholder="Ex: 2025" min="2000" max="2100" value="@ViewBag.Annee"/>
+                    <button type="submit" id="apply-filters" style="padding: 8px 15px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer;">
+                        Appliquer
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3 class="chart-title">Évolution Mensuelle</h3>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="salaireChart"></canvas>
+            </div>
+            <div class="chart-legend" id="chartLegend"></div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    const labels = @Html.Raw(Json.Serialize(Model.Select(m => m.Month)));
+    const netPayData = @Html.Raw(Json.Serialize(Model.Select(m => m.NetPay)));
+
+    const datasets = [
+        {
+            label: 'Net à payer',
+            data: netPayData,
+            borderColor: '#4361ee',
+            backgroundColor: 'rgba(67, 97, 238, 0.1)',
+            fill: true,
+            tension: 0.3
+        }
+        @foreach (var comp in composantes)
+        {
+            var data = Model.Select(m => m.Components.ContainsKey(comp) ? m.Components[comp] : 0);
+        <text>,{
+            label: '@comp',
+            data: @Html.Raw(Json.Serialize(data)),
+            borderColor: getRandomColor(),
+            fill: false,
+            tension: 0.3
+        }</text>
+        }
+    ];
+
+    function getRandomColor() {
+        const r = Math.floor(Math.random() * 155);
+        const g = Math.floor(Math.random() * 155);
+        const b = Math.floor(Math.random() * 155);
+        return `rgb(${r},${g},${b})`;
+    }
+
+    const ctx = document.getElementById('salaireChart').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            plugins: {
+                title: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const val = context.parsed.y || 0;
+                            // Format nombre avec séparateur français sans currency
+                            return `${context.dataset.label}: ${val.toLocaleString('fr-FR')}`;
+                        }
+                    }
+                },
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Montants'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return value.toLocaleString('fr-FR');
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Génération de la légende custom
+    const legendContainer = document.getElementById('chartLegend');
+    chart.data.datasets.forEach(dataset => {
+        const color = dataset.borderColor;
+        const item = document.createElement('div');
+        item.className = 'legend-item';
+        item.innerHTML = `<div class="legend-color" style="background-color:${color}"></div><span>${dataset.label}</span>`;
+        legendContainer.appendChild(item);
+    });
+</script>

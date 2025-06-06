@@ -50,8 +50,20 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2FsYXJ5L0luZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[/home/nantenaina/Documents/GitHub/NewAppErp/Views/Salary/SalaireChart.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2FsYXJ5L1NhbGFpcmVDaGFydC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [/home/nantenaina/Documents/GitHub/NewAppErp/Views/Salary/Salaireliste.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2FsYXJ5L1NhbGFpcmVsaXN0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/nantenaina/Documents/GitHub/NewAppErp/Views/Salary/SalairelisteEmp.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2FsYXJ5L1NhbGFpcmVsaXN0ZUVtcC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/nantenaina/Documents/GitHub/NewAppErp/Views/Salary/SalaireStatistique.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2FsYXJ5L1NhbGFpcmVTdGF0aXN0aXF1ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [/home/nantenaina/Documents/GitHub/NewAppErp/Views/Shared/Error.cshtml]

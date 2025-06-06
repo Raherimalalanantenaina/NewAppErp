@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="~/css/base.css" asp-append-version="true" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
@@ -22,7 +23,7 @@
         
         <div class="sidebar-menu">
             <div class="menu-category">Principal</div>
-            <a asp-controller="Salary" asp-action="Salaireliste" class="menu-item">
+            <a asp-controller="Salary" asp-action="SalaireChart" class="menu-item">
                 <i class="fas fa-chart-line"></i>
                 <span>Tableau de bord</span>
             </a>

@@ -56,7 +56,7 @@ namespace NewAppErp.Controllers.Login
                     "CookieAuth",
                     new ClaimsPrincipal(claimsIdentity));
 
-                return RedirectToAction("Salaireliste", "Salary");
+                return RedirectToAction("SalaireChart", "Salary");
             }
 
             ModelState.AddModelError(string.Empty, "Identifiants incorrects");
