@@ -13,5 +13,6 @@ namespace NewAppErp.Services.Util
         Task<List<string>> GetGenders();
         Task<List<string>> GetAllSalaryComponents();
         Dictionary<string, decimal> CalculerTotaux(List<EmployeeSalaryComponentGridViewModel> viewModels, List<string> componentNames);
+        Dictionary<string, decimal> CalculerStatistique(List<MonthlySalaryComponentTotals> viewModels, List<string> componentNames);
     }
 }
