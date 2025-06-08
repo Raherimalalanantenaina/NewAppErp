@@ -95,5 +95,18 @@ namespace NewAppErp.Services.Util
             Console.WriteLine(totals["Deduction"]);
             return totals;
         }
+        public Dictionary<string, decimal> CalculerStatistique(List<MonthlySalaryComponentTotals> viewModels, List<string> componentNames)
+        {
+            var totals = new Dictionary<string, decimal>();
+            foreach (var name in componentNames)
+            {
+                totals[name] = viewModels.Sum(vm => vm.Components.ContainsKey(name) ? vm.Components[name] : 0);
+            }
+            totals["NetPay"] = viewModels.Sum(vm => vm.NetPay);
+            totals["Gain"] = viewModels.Sum(vm => vm.GrossPay);
+            totals["Deduction"] = viewModels.Sum(vm => vm.TotalDeduction);
+            Console.WriteLine(totals["Deduction"]);
+            return totals;
+        }
     }
 }

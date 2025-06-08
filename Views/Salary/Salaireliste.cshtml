@@ -36,25 +36,20 @@
                 {
                     <th class="text-right">@comp</th>
                 }
-                <th class="text-right">Net à Payer</th>
                 <th class="text-right">Total Earning</th>
                 <th class="text-right">Total Deduction</th>
+                <th class="text-right">Net à Payer</th>
             </tr>
         </thead>
         <tbody>
             <tr>
                 <td class="text-bold">Total</td>
-                <td colspan="1"></td> <!-- Ajuste selon tes colonnes fixes -->
                 @foreach (var name in ViewBag.ComponentNames as List<string>)
                 {
                     var total = ((Dictionary<string, decimal>)ViewBag.ComponentTotals)[name];
                     <td class="text-right currency">@String.Format("{0:N0}", Math.Abs(total))</td>
                 }
-                <td class="text-right currency">
-                    @String.Format("{0:N0}", Math.Abs(ViewBag.ComponentTotals != null && ((Dictionary<string, decimal>)ViewBag.ComponentTotals).ContainsKey("NetPay") 
-                        ? ((Dictionary<string, decimal>)ViewBag.ComponentTotals)["NetPay"] 
-                        : 0m))
-                </td>
+
                 <td class="text-right currency">
                     @String.Format("{0:N0}", Math.Abs(ViewBag.ComponentTotals != null && ((Dictionary<string, decimal>)ViewBag.ComponentTotals).ContainsKey("Gain") 
                         ? ((Dictionary<string, decimal>)ViewBag.ComponentTotals)["Gain"] 
@@ -63,6 +58,11 @@
                 <td class="text-right currency">
                     @String.Format("{0:N0}", Math.Abs(ViewBag.ComponentTotals != null && ((Dictionary<string, decimal>)ViewBag.ComponentTotals).ContainsKey("Deduction") 
                         ? ((Dictionary<string, decimal>)ViewBag.ComponentTotals)["Deduction"] 
+                        : 0m))
+                </td>
+                <td class="text-right currency">
+                    @String.Format("{0:N0}", Math.Abs(ViewBag.ComponentTotals != null && ((Dictionary<string, decimal>)ViewBag.ComponentTotals).ContainsKey("NetPay") 
+                        ? ((Dictionary<string, decimal>)ViewBag.ComponentTotals)["NetPay"] 
                         : 0m))
                 </td>
             </tr>

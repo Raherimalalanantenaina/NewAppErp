@@ -19,7 +19,7 @@ namespace NewAppErp.Controllers.Import
         [HttpGet]
         public IActionResult Import()
         {
-            return View(new ImportResult());
+            return View();
         }
 
         [HttpPost]
@@ -29,7 +29,7 @@ namespace NewAppErp.Controllers.Import
 
             if (employeeFile == null || salaryFile == null || salaryEmpFile == null)
             {
-                ModelState.AddModelError("", "Veuillez fournir les trois fichiers.");
+                result.Message="Veuillez fournir les trois fichiers.";
                 return View(result);
             }
 
@@ -39,9 +39,6 @@ namespace NewAppErp.Controllers.Import
             var salaryEmpResult = await _importService.TraiterSalaryEmpCsvAsync(salaryEmpFile.OpenReadStream());
 
             // Regrouper les résultats
-            result.ValidRows = employeeResult.ValidRows;
-            result.SalaryElements = salaryResult.SalaryElements;
-            result.SalaryEmpList = salaryEmpResult.SalaryEmpList;
 
             result.Errors.AddRange(employeeResult.Errors);
             result.Errors.AddRange(salaryResult.Errors);
@@ -51,25 +48,33 @@ namespace NewAppErp.Controllers.Import
             {
                 return View(result);
             }
-            var importData = new ImportDataDto
+            var data = new BulkImportDto
             {
-                Employees = result.ValidRows,
-                SalaryElements = result.SalaryElements,
-                SalaryEmps = result.SalaryEmpList
+                Employees = employeeResult.employeeImportDtos,
+                SalaryElements = salaryResult.salaireElements,
+                SalaryEmps = salaryEmpResult.salaryEmp
             };
-
+            Console.WriteLine(data.Employees.Count);
             try
             {
-                var apiResponse = await _importService.EnvoyerImportDataAsync(importData);
+                var apiResponse = await _importService.ImportBulkDataAsync(data);
+                result.Message = apiResponse.Message;
                 Console.WriteLine(apiResponse.Message);
-                result.ApiMessage = apiResponse.Message;
-                result.ImportSummary = apiResponse;
                 if (apiResponse.Errors != null && apiResponse.Errors.Any())
                 {
                     foreach (var err in apiResponse.Errors)
                     {
                         result.Errors.Add(err);
                     }
+                }
+                else
+                {
+                    result.Counts = new ImportCounts
+                    {
+                        Employees = apiResponse.Counts.Employees,
+                        Structures = apiResponse.Counts.Structures,
+                        Slips=apiResponse.Counts.Slips
+                    };
                 }
             }
             catch (JsonException ex)

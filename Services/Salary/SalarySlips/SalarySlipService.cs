@@ -415,7 +415,6 @@ namespace NewAppErp.Services.Salary.SalarySlips
         }
 
 
-
         public async Task<List<EmployeeSalaryComponentGridViewModel>> BuildEmployeeSalaryViewModelsAsync(List<SalarySlip> slips, List<string> componentNames)
         {
             var viewModels = new List<EmployeeSalaryComponentGridViewModel>();

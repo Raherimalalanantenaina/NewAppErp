@@ -45,11 +45,18 @@
         margin-top: 15px;
     }
 
+    .legend-item:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
     .legend-item {
         display: flex;
         align-items: center;
         font-size: 13px;
         gap: 5px;
+    }
+    .legend-item.inactive {
+        opacity: 0.5;
+        text-decoration: line-through;
     }
 
     .legend-color {
@@ -178,12 +185,27 @@
     });
 
     // Génération de la légende custom
+     // Génération de la légende custom avec interactivité
     const legendContainer = document.getElementById('chartLegend');
-    chart.data.datasets.forEach(dataset => {
+    chart.data.datasets.forEach((dataset, index) => {
         const color = dataset.borderColor;
         const item = document.createElement('div');
         item.className = 'legend-item';
         item.innerHTML = `<div class="legend-color" style="background-color:${color}"></div><span>${dataset.label}</span>`;
+        
+        // Gestion du clic sur un élément de légende
+        item.addEventListener('click', function() {
+            // Basculer l'état hidden du dataset
+            const meta = chart.getDatasetMeta(index);
+            meta.hidden = !meta.hidden;
+            
+            // Basculer la classe inactive sur l'élément de légende
+            item.classList.toggle('inactive');
+            
+            // Mettre à jour le graphique
+            chart.update();
+        });
+        
         legendContainer.appendChild(item);
     });
 </script>

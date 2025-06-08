@@ -4,44 +4,20 @@ namespace NewAppErp.Models.ImportDto
 {
     public class ImportResult
     {
-        public List<EmployeeImportDto> ValidRows { get; set; } = new List<EmployeeImportDto>();
-        public List<SalaryElementImportDto> SalaryElements { get; set; } = new List<SalaryElementImportDto>();
-        public List<SalaryEmpImportDto> SalaryEmpList { get; set; } = new List<SalaryEmpImportDto>();
+        public bool Success { get; set; }
+        public string Message { get; set; }
+        public ImportCounts Counts { get; set; } = new ImportCounts();
         public List<string> Errors { get; set; } = new List<string>();
-        public ImportResponseDto ImportSummary { get; set; }
-        public string ApiMessage { get; set; }
 
-        public bool HasErrors => Errors.Count > 0;
-
-        public void MergeResults(params ImportResult[] results)
-        {
-            foreach (var result in results)
-            {
-                ValidRows.AddRange(result.ValidRows);
-                SalaryElements.AddRange(result.SalaryElements);
-                SalaryEmpList.AddRange(result.SalaryEmpList);
-                Errors.AddRange(result.Errors);
-            }
-        }
-
-        public void ProcessApiResponse(ImportResponseDto response)
-        {
-            ImportSummary = response;
-            ApiMessage = response.Message;
-
-            if (response.Errors != null)
-            {
-                foreach (var error in response.Errors)
-                {
-                    Errors.Add(error);
-                }
-            }
-        }
+        public List<EmployeeImportDto> employeeImportDtos { get; set; } = new List<EmployeeImportDto>();
+        public List<SalaryElementImportDto> salaireElements { get; set; } = new List<SalaryElementImportDto>();
+        public List<SalaryEmpImportDto> salaryEmp { get; set; } = new List<SalaryEmpImportDto>();
     }
 
-    public class FrappeApiResult<T>
+    public class ImportCounts
     {
-        public T Message { get; set; }
-        public object Exc { get; set; }
+        public int Employees { get; set; }
+        public int Structures { get; set; }
+        public int Slips { get; set; }
     }
 }

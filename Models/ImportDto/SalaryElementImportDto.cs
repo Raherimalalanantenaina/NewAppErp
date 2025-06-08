@@ -2,11 +2,11 @@ namespace NewAppErp.Models.ImportDto
 {
     public class SalaryElementImportDto
     {
-        public string SalaryStructure { get; set; }
-        public string Name { get; set; }
-        public string Abbr { get; set; }
-        public string Type { get; set; } // earning ou deduction
-        public string Valeur { get; set; } // Formule ou montant
-        public string Company { get; set; }
+        public string SalaryStructure { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Abbr { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty;
+        public string Valeur { get; set; } = string.Empty;
+        public string Company { get; set; } = string.Empty;
     }
 }

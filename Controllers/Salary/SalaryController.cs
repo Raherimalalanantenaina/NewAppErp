@@ -132,7 +132,9 @@ namespace NewAppErp.Controllers.Salary
             var componentNames = await _utilService.GetAllSalaryComponents();
 
             var totals = await _salarySlipService.GetMonthlySalaryComponentTotalsAsync(slips, componentNames);
+            var totalcalcul = _utilService.CalculerStatistique(totals,componentNames);
             ViewBag.ComponentNames = componentNames;
+            ViewBag.ComponentTotals = totalcalcul;
             ViewBag.Annee = annee;
             return View(totals);
         }

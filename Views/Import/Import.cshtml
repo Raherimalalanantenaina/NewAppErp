@@ -246,7 +246,7 @@
     if (Model.Errors.Any())
     {
         <div class="alert alert-danger">
-            <h5><i class="fas fa-exclamation-triangle"></i> Erreurs détectées lors de l'importation :</h5>
+            <h5><i class="fas fa-exclamation-triangle"></i> @Model.Message</h5>
             <ul>
                 @foreach (var error in Model.Errors)
                 {
@@ -255,38 +255,13 @@
             </ul>
         </div>
     }
-    else
+    else 
     {
         <div class="alert alert-success">
-            <h5><i class="fas fa-check-circle"></i> Importation réussie</h5>
-            
-            @if (Model.ImportSummary != null)
-            {
-                <div class="import-summary">
-                    <p>Résumé de l'importation :</p>
-                    <ul>
-                        <li>
-                            <span>Employés importés :</span>
-                            <strong>@Model.ImportSummary.Counts?.Employees</strong>
-                        </li>
-                        <li>
-                            <span>Structures importées :</span>
-                            <strong>@Model.ImportSummary.Counts?.Structures</strong>
-                        </li>
-                        <li>
-                            <span>Fiches de paie importées :</span>
-                            <strong>@Model.ImportSummary.Counts?.Slips</strong>
-                        </li>
-                    </ul>
-                </div>
-            }
-            
-            @if (!string.IsNullOrEmpty(Model.ApiMessage))
-            {
-                <div class="api-message">
-                    <strong>Message API :</strong> @Model.ApiMessage
-                </div>
-            }
+            <h5><i class="fas fa-check-circle"></i>@Model.Message</h5>
+            <p>Employés:@Model.Counts.Employees</p>
+            <p>Structure:@Model.Counts.Structures</p>
+            <p>Slip:@Model.Counts.Slips</p>
         </div>
     }
 }
